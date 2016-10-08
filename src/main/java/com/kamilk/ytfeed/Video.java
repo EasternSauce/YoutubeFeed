@@ -2,16 +2,18 @@ package com.kamilk.ytfeed;
 
 import com.google.api.client.util.DateTime;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
 /**
  * Created by kamil on 2016-08-05.
- * Class representing single video and it's data.
+ * Class representing single video and its data.
  */
 
-class Video {
+
+class Video implements Serializable{
     private String title;
     private DateTime published;
     private String id;

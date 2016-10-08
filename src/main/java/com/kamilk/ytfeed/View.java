@@ -5,10 +5,12 @@ import java.io.IOException;
 
 /**
  * Created by kamil on 2016-09-03.
- * View class of MVC pattern.
+ * View class of MVC pattern. Mostly just delegation from window instances.
  */
 
 class View {
+
+    //windows inheriting JFrame
     private MainWindow mainWindow;
     private ChannelsWindow channelsWindow;
     private SearchWindow searchWindow;
@@ -18,6 +20,8 @@ class View {
         channelsWindow = new ChannelsWindow();
         searchWindow = new SearchWindow();
     }
+
+    //delegations
 
     void displayMainWindow() {
         mainWindow.display();
@@ -52,20 +56,20 @@ class View {
         mainWindow.showLoadingScreen();
     }
 
-    void startUpdatingVideos() {
-        mainWindow.startUpdatingVideos();
+    void clearVideosPanel() {
+        mainWindow.clearVideosPanel();
     }
 
-    void addVideoEntry(Video video, MouseAdapter mouseAdapter){
+    void addVideoEntry(Video video, MouseAdapter mouseAdapter) {
         try {
-            mainWindow.addVideoEntry(video, mouseAdapter);
+            mainWindow.addVideoEntryToPanel(video, mouseAdapter);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    void finishUpdatingVideos() {
-        mainWindow.finishUpdatingVideos();
+    void updateVideosPanel() {
+        mainWindow.updateVideosPanel();
     }
 
     void showChannelSearch() {
@@ -83,26 +87,26 @@ class View {
     }
 
 
-    void startSearchResults() {
-        searchWindow.startSearchResults();
+    void clearSearchResults() {
+        searchWindow.clearSearchResults();
     }
-    void showSearchResult(Channel channel, MouseAdapter mouseAdapter) {
-        searchWindow.showSearchResult(channel, mouseAdapter);
+    void addResultEntry(Channel channel, MouseAdapter mouseAdapter) {
+        searchWindow.addResultEntry(channel, mouseAdapter);
     }
-    void finishSearchResults() {
-        searchWindow.finishSearchResults();
-    }
-
-    void startUpdatingChannels() {
-        channelsWindow.startUpdatingChannels();
+    void updateSearchResults() {
+        searchWindow.updateSearchResults();
     }
 
-    void updateChannel(Channel channel, MouseAdapter mouseAdapter) {
-        channelsWindow.updateChannel(channel, mouseAdapter);
+    void clearChannelsPanel() {
+        channelsWindow.clearChannelsPanel();
     }
 
-    void finishUpdatingChannels() {
-        channelsWindow.finishUpdatingChannels();
+    void addChannelEntry(Channel channel, MouseAdapter mouseAdapter) {
+        channelsWindow.addChannelEntry(channel, mouseAdapter);
+    }
+
+    void updateChannelsPanel() {
+        channelsWindow.updateChannelsPanel();
     }
 
 }

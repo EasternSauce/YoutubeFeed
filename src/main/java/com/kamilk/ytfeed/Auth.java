@@ -1,10 +1,5 @@
 package com.kamilk.ytfeed;
 
-/**
- * Created by kamil on 2016-08-05.
- * Authentication of Youtube API.
- */
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -24,11 +19,17 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
+/**
+ * Created by kamil on 2016-08-05.
+ * Authentication of Youtube API.
+ */
+
 class Auth {
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String CREDENTIALS_DIRECTORY = ".oauth-credentials";
 
+    //authentication borrowed from Youtube Data API sample code
     static Credential authorize(List<String> scopes, String credentialDatastore) throws IOException {
         final java.util.logging.Logger buggyLogger = java.util.logging.Logger.getLogger(FileDataStoreFactory.class.getName());
         buggyLogger.setLevel(java.util.logging.Level.SEVERE);

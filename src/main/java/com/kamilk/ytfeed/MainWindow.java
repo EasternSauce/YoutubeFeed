@@ -60,6 +60,7 @@ class MainWindow extends Window {
         channelsButton.addActionListener(actionListener);
     }
 
+    //videos panel informs that loading is ocurring
     void showLoadingScreen() {
         videosPanel.removeAll();
         JLabel loading = new JLabel("Loading...");
@@ -68,11 +69,11 @@ class MainWindow extends Window {
         videosPanel.repaint();
     }
 
-    void startUpdatingVideos() {
+    void clearVideosPanel() {
         videosPanel.removeAll();
     }
 
-    void addVideoEntry(Video video, MouseAdapter mouseAdapter) throws IOException{
+    void addVideoEntryToPanel(Video video, MouseAdapter mouseAdapter) throws IOException{
         JPanel videoEntry = new JPanel();
         videoEntry.setLayout(new FlowLayout(FlowLayout.LEFT));
         videoEntry.setBackground(Color.GRAY);
@@ -113,12 +114,14 @@ class MainWindow extends Window {
         makeClickable(videoEntry, mouseAdapter);
     }
 
-    void finishUpdatingVideos() {
+    void updateVideosPanel() {
         progressBar.setValue(0);
 
         videosPanel.revalidate();
         videosPanel.repaint();
     }
+
+    //progress bar manipulation methods
 
     void setProgressMax(int size) {
         progressBar.setMaximum(size);

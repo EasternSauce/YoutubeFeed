@@ -10,10 +10,7 @@ import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.common.collect.Lists;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by kamil on 2016-07-27.
@@ -28,11 +25,10 @@ class YoutubePuller {
     YoutubePuller() throws IOException {
         List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.readonly");
 
-        Credential credential = Auth.authorize(scopes, "youtubequery");
+        Credential credential = Auth.authorize(scopes, "youtubepuller");
 
         youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, credential).setApplicationName(
-                "test").build();
-
+                "youtube-feed").build();
 
         apiKey = new Properties().getProperty("youtube.apikey");
     }
@@ -53,7 +49,7 @@ class YoutubePuller {
     }
 
     List<Channel> queryChannels(String query) throws IOException {
-        List<Channel> results = new ArrayList<Channel>();
+        List<Channel> results = new LinkedList<Channel>();
 
         YouTube.Search.List search = youtube.search().list("id,snippet");
 

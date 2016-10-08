@@ -6,18 +6,16 @@ import java.awt.event.MouseAdapter;
 
 /**
  * Created by kamil on 2016-09-03.
- * Window class to be inherited from.
+ * JFrame window class to be inherited from by concrete window classes.
  */
 
 abstract class Window extends JFrame {
-    private JPanel mainPanel;
+    private JPanel mainPanel = new JPanel(new GridBagLayout());
 
     Window(String title) {
         super(title);
 
         setResizable(false);
-
-        mainPanel = new JPanel(new GridBagLayout());
     }
 
     void addComponent(JComponent component, int x, int y, int w, int h) {

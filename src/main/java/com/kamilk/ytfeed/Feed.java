@@ -3,7 +3,7 @@ package com.kamilk.ytfeed;
 import com.google.api.services.youtube.model.ResourceId;
 import com.google.api.services.youtube.model.SearchResult;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -12,26 +12,45 @@ import java.util.*;
  */
 
 class Feed {
-    private List<Video> videos;
-    private List<Channel> channels;
-    private Boolean changed;
+    private List<Video> videos = new LinkedList<Video>();
+    private List<Channel> channels = new LinkedList<Channel>();
 
-    Boolean isChanged() {
+    private Date lastUpdated;
+    private boolean changed = false;
+
+    Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
+    boolean isChanged() {
         return changed;
     }
 
-    void setChanged(Boolean changed) {
+    void setChanged(boolean changed) {
         this.changed = changed;
     }
 
-    Feed() {
-        videos = new LinkedList<Video>();
-        channels = new LinkedList<Channel>();
-        changed = false;
-    }
-
+    //returns a copy of video list
     List<Video> getVideos() {
-        return videos;
+        List<Video> videosCopy = new LinkedList<Video>();
+
+        for(Video video : videos) {
+            Video videoCopy = new Video();
+
+            videoCopy.setChannelTitle(video.getChannelTitle());
+            videoCopy.setId(video.getId());
+            videoCopy.setPublished(video.getPublished());
+            videoCopy.setThumbnailUrl(video.getThumbnailUrl());
+            videoCopy.setTitle(video.getTitle());
+
+            videosCopy.add(videoCopy);
+        }
+
+        return videosCopy;
     }
 
     void addChannelId(String channelId, YoutubePuller query) throws IOException{
@@ -40,17 +59,20 @@ class Feed {
     }
 
     List<Channel> getChannels() {
-        return channels;
+        List<Channel> channelsCopy = new LinkedList<Channel>();
+
+        for(Channel channel : channels) {
+            Channel channelCopy = new Channel(channel.getId(), channel.getTitle());
+            channelsCopy.add(channelCopy);
+        }
+
+        return channelsCopy;
     }
 
-    void startPullingVideos() {
-        videos.clear();
-    }
+    //pull the videos using the API and fill the video list
+    void pullVideos(YoutubePuller query, Channel channel, Date since) throws IOException{
 
-    void pullVideos(YoutubePuller query, Channel channel) throws IOException{
-
-        long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        List<SearchResult> searchResults = query.getVideosSince(channel.getId(), new Date(System.currentTimeMillis() - (7 * DAY_IN_MS)));
+        List<SearchResult> searchResults = query.getVideosSince(channel.getId(), since);
 
         if(searchResults != null) {
             for (SearchResult searchResult : searchResults) {
@@ -59,13 +81,8 @@ class Feed {
         }
     }
 
-    void finishPullingVideos() {
-        sort(videos);
-    }
-
-    private void sort(List<Video> videos) {
+    void sortVideos() {
         Collections.sort(videos, new Comparator<Video>() {
-            @Override
             public int compare(Video vid1, Video vid2) {
                 long val1 = vid1.getPublished().getValue();
                 long val2 = vid2.getPublished().getValue();
@@ -77,6 +94,7 @@ class Feed {
         Collections.reverse(videos);
     }
 
+    //add video from search result
     private void addVideo(SearchResult searchResult, YoutubePuller puller) throws IOException {
         ResourceId rId = searchResult.getId();
 
@@ -89,10 +107,16 @@ class Feed {
 
             vid.setPublished(puller.getVideoPublishedDate(vid.getId()));
 
+            long DAY_IN_MS = 1000 * 60 * 60 * 24;
+            if(vid.getPublished().getValue() < System.currentTimeMillis() - (7 * DAY_IN_MS)) {
+                return;
+            }
+
             videos.add(vid);
         }
     }
 
+    //add channel if not already added
     void addChannel(Channel channelToAdd){
         for(Channel channel : channels) {
             if(channelToAdd.getId().equals(channel.getId())) {
@@ -113,6 +137,98 @@ class Feed {
                 return;
             }
         }
+    }
+
+    private void deleteCacheFiles(String directory) {
+
+        File dir = new File(directory);
+        File vidsDir = new File(directory + "/vids");
+
+        File[] files = vidsDir.listFiles();
+
+        if(files != null) {
+
+            for (File file : files) {
+                file.delete();
+            }
+        }
+
+        files = dir.listFiles();
+        if(files != null) {
+            for (File file : files) {
+                if(file.isDirectory()) continue;
+                file.delete();
+            }
+        }
+    }
+
+    void serializeToCache(String directory) throws IOException{
+
+        File dir = new File(directory);
+        File vidsDir = new File(directory + "/vids");
+
+        dir.mkdir();
+        vidsDir.mkdir();
+
+        deleteCacheFiles(directory);
+
+        int id = 0;
+
+            for(Video video : videos) {
+                    FileOutputStream fileOut =
+                            new FileOutputStream(vidsDir.getPath() + "/video" + id++ + ".serializable");
+                    ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                    out.writeObject(video);
+                    out.close();
+                    fileOut.close();
+
+            }
+            FileOutputStream fileOut =
+                    new FileOutputStream(dir.getPath() + "/last_updated.serializable");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(getLastUpdated());
+            out.close();
+            fileOut.close();
+
+    }
+
+    void deserializeFromCache(String directory) throws IOException, ClassNotFoundException{
+        File dir = new File(directory);
+
+        File vidsDir = new File(directory + "/vids");
+
+        File[] files = dir.listFiles();
+        if(files == null || files.length == 0) {
+            long DAY_IN_MS = 1000 * 60 * 60 * 24;
+            setLastUpdated(new Date(System.currentTimeMillis() - (7 * DAY_IN_MS)));
+            return;
+        }
+        videos.clear();
+
+            files = vidsDir.listFiles();
+            if(files == null) throw new IOException();
+
+            for (File file : files) {
+                if(file.isDirectory()) continue;
+
+
+                FileInputStream fileIn = new FileInputStream(file.getPath());
+                ObjectInputStream in = new ObjectInputStream(fileIn);
+                videos.add((Video) in.readObject());
+                in.close();
+                fileIn.close();
+
+            }
+            FileInputStream fileIn = new FileInputStream(dir.getPath() + "/last_updated.serializable");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            setLastUpdated((Date) in.readObject());
+            in.close();
+            fileIn.close();
+
+    }
+
+    void clearVideos() {
+        videos.clear();
     }
 
 }

@@ -51,11 +51,11 @@ class SearchWindow extends Window {
         return searchBox.getText();
     }
 
-    void startSearchResults() {
+    void clearSearchResults() {
         channelsPanel.removeAll();
     }
 
-    void showSearchResult(Channel channel, MouseAdapter mouseAdapter) {
+    void addResultEntry(Channel channel, MouseAdapter mouseAdapter) {
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
         JLabel title = new JLabel(channel.getTitle() + "   ");
@@ -68,7 +68,7 @@ class SearchWindow extends Window {
         makeClickable(addLink, mouseAdapter);
     }
 
-    void finishSearchResults() {
+    void updateSearchResults() {
         channelsPanel.revalidate();
         channelsPanel.repaint();
     }

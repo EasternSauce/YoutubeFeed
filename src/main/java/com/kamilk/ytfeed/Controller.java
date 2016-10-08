@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,28 +19,38 @@ import java.util.List;
 class Controller {
     private Model model;
     private View view;
-    private boolean inProgress;
+    //used to prevent following updates from happening if the first one did not finish
+    private boolean inProgress = false;
 
     Controller(Model model, View view) {
         this.model = model;
         this.view = view;
-        inProgress = false;
     }
 
-
+    //actually run the mvc program
     void runApp() {
-        handleListeners();
-        model.loadFiles();
+        handleListeners(); //add every listener
+
+        model.loadFiles(); //load serialized data if found, also load channel list
+
         view.displayMainWindow();
 
+        view.clearVideosPanel();
+
+        for (Video video : model.getVideos()) view.addVideoEntry(video, new VideoLinkListener(video));
+
+        view.updateVideosPanel();
+
+        //dont block input when updating
         Thread thread = new Thread() {
             public void run() {
-                refreshVideos();
+                updateVideoList();
             }
         };
         thread.start();
     }
 
+    //add every JComponent listener thats needed
     private void handleListeners() {
         view.addUpdateButtonListener(new UpdateButtonListener());
         view.addChannelsButtonListener(new ChannelsButtonListener());
@@ -48,60 +59,85 @@ class Controller {
         view.addChannelsWindowListener(new ChannelsWindowListener());
     }
 
-    private void refreshVideos() {
-        if(inProgress) return;
-        inProgress = true;
-
-
+    private void pullAndShowVideos(Date since) {
         view.showLoadingScreen();
-        model.startPullingVideos();
-        view.setProgressMax(model.getChannels().size() * 10);
-        for (Channel channel : model.getChannels()) {
 
-            model.pullVideos(channel);
+        List<Channel> channels = model.getChannels();
+        view.setProgressMax(channels.size() * 10);
+
+        for (Channel channel : channels) {
+            model.pullVideos(channel, since);
 
             view.increaseProgress(7);
         }
-        model.finishPullingVideos();
+        model.setLastUpdated(new Date()); //set last updated to current time
+        model.sortVideos();
+        model.serializeToCache();
 
-        view.startUpdatingVideos();
+        view.clearVideosPanel();
 
         for (Video video : model.getVideos()) {
             view.addVideoEntry(video, new VideoLinkListener(video));
             view.increaseProgress(3);
         }
 
-        view.finishUpdatingVideos();
+        view.updateVideosPanel();
 
         view.resetProgress();
+    }
+
+    //updates video list but only since the last time it was updated
+    private void updateVideoList() {
+        if(inProgress) return;
+        inProgress = true;
+
+        pullAndShowVideos(model.getLastUpdated());
 
         inProgress = false;
     }
 
-    private void refreshChannels() {
-        view.startUpdatingChannels();
-        for (Channel channel : model.getChannels()) {
-            view.updateChannel(channel, new RemoveLinkListener(channel));
-        }
-        view.finishUpdatingChannels();
+    //refreshes and reloads the video list completely
+    private void refreshVideoList() {
+        if(inProgress) return;
+        inProgress = true;
+
+        model.clearVideos();
+
+        long DAY_IN_MS = 1000 * 60 * 60 * 24;
+        pullAndShowVideos(new Date(System.currentTimeMillis() - (7 * DAY_IN_MS))); //pull videos 7 days old at most
+
+        inProgress = false;
+
     }
 
+
+    private void refreshChannelList() {
+        view.clearChannelsPanel();
+        for (Channel channel : model.getChannels()) {
+            view.addChannelEntry(channel, new RemoveLinkListener(channel));
+        }
+        view.updateChannelsPanel();
+    }
+
+    private void refreshSearchResults(List<Channel> results) {
+        view.clearSearchResults();
+        for (Channel result : results) {
+            view.addResultEntry(result, new AddLinkListener(result));
+        }
+        view.updateSearchResults();
+    }
+
+    //searches for videos and refreshes the results
     private void performChannelSearch() {
         List<Channel> results = model.queryChannels(view.getSearchedTerm());
-
-        view.startSearchResults();
-        for (Channel result : results) {
-            view.showSearchResult(result, new AddLinkListener(result));
-        }
-        view.finishSearchResults();
+        refreshSearchResults(results);
     }
 
     private class UpdateButtonListener implements ActionListener {
-        @Override
         public void actionPerformed(ActionEvent e) {
             Thread thread = new Thread() {
                 public void run() {
-                    refreshVideos();
+                    updateVideoList();
                 }
             };
             thread.start();
@@ -109,26 +145,23 @@ class Controller {
     }
 
     private class ChannelsButtonListener implements ActionListener {
-        @Override
         public void actionPerformed(ActionEvent e) {
-            view.startUpdatingChannels();
+            view.clearChannelsPanel();
             for (Channel channel : model.getChannels()) {
-                view.updateChannel(channel, new RemoveLinkListener(channel));
+                view.addChannelEntry(channel, new RemoveLinkListener(channel));
             }
-            view.finishUpdatingChannels();
+            view.updateChannelsPanel();
             view.displayChannelsWindow();
         }
     }
 
     private class AddButtonListener implements ActionListener {
-        @Override
         public void actionPerformed(ActionEvent e) {
             view.showChannelSearch();
         }
     }
 
     private class SearchButtonListener implements ActionListener {
-        @Override
         public void actionPerformed(ActionEvent e) {
             performChannelSearch();
         }
@@ -140,7 +173,7 @@ class Controller {
             if (model.isFeedChanged()) {
                 Thread thread = new Thread() {
                     public void run() {
-                        refreshVideos();
+                        refreshVideoList();
                     }
                 };
                 thread.start();
@@ -172,7 +205,13 @@ class Controller {
         @Override
         public void mouseClicked(MouseEvent e) {
             model.addChannelToFeed(channel);
-            refreshChannels();
+
+            Thread thread = new Thread() {
+                public void run() {
+                    refreshChannelList();
+                }
+            };
+            thread.start();
         }
     }
 
@@ -188,7 +227,7 @@ class Controller {
         @Override
         public void mouseClicked(MouseEvent e) {
             model.removeChannelFromFeed(channel);
-            refreshChannels();
+            refreshChannelList();
         }
     }
 
@@ -202,6 +241,7 @@ class Controller {
         @Override
         public void mouseClicked(MouseEvent event) {
             try {
+                //noinspection Since15
                 Desktop.getDesktop().browse(new URI(video.getUrl()));
             } catch (IOException e) {
                 e.printStackTrace();

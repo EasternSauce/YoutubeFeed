@@ -7,6 +7,7 @@ package com.kamilk.ytfeed;
 
 public class App {
     public static void main(String args[]) {
+        //MVC creation
         Controller controller = new Controller(new Model(), new View());
         controller.runApp();
     }

@@ -2,11 +2,12 @@ package com.kamilk.ytfeed;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.List;
 
 /**
  * Created by kamil on 2016-09-03.
- * Model class of MVC pattern.
+ * Model class of MVC pattern. Mostly just delegates methods from Youtube puller and feed.
  */
 
 class Model {
@@ -22,6 +23,7 @@ class Model {
         }
     }
 
+    //load channels from file and serialized data from cache
     void loadFiles() {
         try {
             String line;
@@ -33,9 +35,22 @@ class Model {
             while ((line = br.readLine()) != null) {
                 feed.addChannelId(line, youtubePuller);
             }
-        } catch(FileNotFoundException e) {
-            e.printStackTrace();
+
+            feed.deserializeFromCache("cache");
+
         } catch(IOException e) {
+            e.printStackTrace();
+        } catch(ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //delegations
+
+    void pullVideos(Channel channel, Date since) {
+        try {
+            feed.pullVideos(youtubePuller, channel, since);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -57,22 +72,17 @@ class Model {
         return null;
     }
 
-    void startPullingVideos() {
-        feed.startPullingVideos();
-    }
-
-    void pullVideos(Channel channel) {
+    void serializeToCache() {
         try {
-            feed.pullVideos(youtubePuller, channel);
-        } catch (IOException e) {
+            feed.serializeToCache("cache");
+        } catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-    void finishPullingVideos() {
-        feed.finishPullingVideos();
+    void sortVideos() {
+        feed.sortVideos();
     }
-
     boolean isFeedChanged() {
         return feed.isChanged();
     }
@@ -87,6 +97,18 @@ class Model {
 
     void removeChannelFromFeed(Channel channel) {
         feed.removeChannel(channel);
+    }
+
+    Date getLastUpdated() {
+        return feed.getLastUpdated();
+    }
+
+    void setLastUpdated(Date date) {
+        feed.setLastUpdated(date);
+    }
+
+    void clearVideos() {
+        feed.clearVideos();
     }
 
 }
