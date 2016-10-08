@@ -29,7 +29,9 @@ class Auth {
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String CREDENTIALS_DIRECTORY = ".oauth-credentials";
 
-    //authentication borrowed from Youtube Data API sample code
+    /**
+     * authentication borrowed from Youtube Data API sample code
+     */
     static Credential authorize(List<String> scopes, String credentialDatastore) throws IOException {
         final java.util.logging.Logger buggyLogger = java.util.logging.Logger.getLogger(FileDataStoreFactory.class.getName());
         buggyLogger.setLevel(java.util.logging.Level.SEVERE);

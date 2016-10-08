@@ -11,6 +11,7 @@ import java.io.IOException;
 class View {
 
     //windows inheriting JFrame
+
     private MainWindow mainWindow;
     private ChannelsWindow channelsWindow;
     private SearchWindow searchWindow;

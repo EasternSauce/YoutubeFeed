@@ -19,7 +19,9 @@ import java.util.List;
 class Controller {
     private Model model;
     private View view;
-    //used to prevent following updates from happening if the first one did not finish
+    /**
+     * used to prevent following updates from happening if the first one did not finish
+     */
     private boolean inProgress = false;
 
     Controller(Model model, View view) {
@@ -27,7 +29,9 @@ class Controller {
         this.view = view;
     }
 
-    //actually run the mvc program
+    /**
+     * actually run the mvc program
+     */
     void runApp() {
         handleListeners(); //add every listener
 
@@ -50,7 +54,9 @@ class Controller {
         thread.start();
     }
 
-    //add every JComponent listener thats needed
+    /**
+     * add every JComponent listener thats needed
+     */
     private void handleListeners() {
         view.addUpdateButtonListener(new UpdateButtonListener());
         view.addChannelsButtonListener(new ChannelsButtonListener());
@@ -86,7 +92,9 @@ class Controller {
         view.resetProgress();
     }
 
-    //updates video list but only since the last time it was updated
+    /**
+     * updates video list but only since the last time it was updated
+     */
     private void updateVideoList() {
         if(inProgress) return;
         inProgress = true;
@@ -96,7 +104,9 @@ class Controller {
         inProgress = false;
     }
 
-    //refreshes and reloads the video list completely
+    /**
+     * refreshes and reloads the video list completely
+     */
     private void refreshVideoList() {
         if(inProgress) return;
         inProgress = true;

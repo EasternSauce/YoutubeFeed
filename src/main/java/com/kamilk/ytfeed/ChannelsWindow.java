@@ -14,9 +14,13 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
  */
 
 class ChannelsWindow extends Window {
-    //button to add new channel
+    /**
+     * button to add new channel
+     */
     private JButton addButton;
-    //panel which lists every channel the user added
+    /**
+     * panel which lists every channel the user added
+     */
     private JPanel channelsPanel;
 
     ChannelsWindow() {
@@ -40,12 +44,18 @@ class ChannelsWindow extends Window {
         addMainPanel();
     }
 
-    //used before refreshing channels panel
+    /**
+     * used before refreshing channels panel
+     */
     void clearChannelsPanel() {
         channelsPanel.removeAll();
     }
 
-    //add entries to panel one by one during the refresh
+    /**
+     * add entries to panel one by one during the refresh
+     * @param channel channel to add
+     * @param mouseAdapter click listener
+     */
     void addChannelEntry(Channel channel, MouseAdapter mouseAdapter) {
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
@@ -58,13 +68,14 @@ class ChannelsWindow extends Window {
 
     }
 
-    //used after refreshing channels panel
+    /**
+     * used after refreshing channels panel
+     */
     void updateChannelsPanel() {
         channelsPanel.revalidate();
         channelsPanel.repaint();
     }
 
-    //addAddAdddAddButtonAddListenerToBeAddedAfterBeingAddedToAddWindow
     void addAddButtonListener(ActionListener actionListener) {
         addButton.addActionListener(actionListener);
     }

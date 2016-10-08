@@ -60,7 +60,9 @@ class MainWindow extends Window {
         channelsButton.addActionListener(actionListener);
     }
 
-    //videos panel informs that loading is ocurring
+    /**
+     * videos panel informs that loading is ocurring
+     */
     void showLoadingScreen() {
         videosPanel.removeAll();
         JLabel loading = new JLabel("Loading...");
