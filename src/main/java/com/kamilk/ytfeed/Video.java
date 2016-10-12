@@ -9,8 +9,6 @@ import java.util.Date;
 /**
  * Class representing single video and its data.
  */
-
-
 class Video implements Serializable{
     /**
      * Youtube video title.

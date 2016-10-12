@@ -7,7 +7,6 @@ import java.awt.event.MouseAdapter;
 /**
  * JFrame window class to be inherited from by concrete window classes.
  */
-
 abstract class Window extends JFrame {
     /**
      * The main panel of every window. Windows are supposed to be added to it.

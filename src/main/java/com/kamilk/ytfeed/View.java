@@ -6,7 +6,6 @@ import java.io.IOException;
 /**
  * View class of MVC pattern. Mostly just delegates from window instances.
  */
-
 class View {
     /**
      * Main window instance.

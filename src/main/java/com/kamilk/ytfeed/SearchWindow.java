@@ -11,7 +11,6 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Window where you can search for new channel to add to channel list.
  */
-
 class SearchWindow extends Window {
     /**
      * Search box to input search keywords.

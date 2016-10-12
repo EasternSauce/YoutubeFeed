@@ -14,7 +14,6 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Main window to display the video feed on.
  */
-
 class MainWindow extends Window {
     /**
      * Button to update video list.
