@@ -13,28 +13,46 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by kamil on 2016-07-27.
  * Pulling data using the Youtube API.
  */
-
 class YoutubePuller {
+    /**
+     * Maximum number of result videos for channel.
+     */
     private final long NUMBER_OF_RESULTS_RETURNED = 25;
+    /**
+     * Youtube instance.
+     */
     private YouTube youtube;
+    /**
+     * Loaded API key.
+     */
     private String apiKey;
 
-    YoutubePuller() throws IOException {
-        List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.readonly");
+    /**
+     * Sets API credentials.
+     * @param credentialName name of credential
+     * @param appName name of app
+     */
+    void setCredentials(final String credentialName, final String appName) throws IOException {
+        final List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.readonly");
 
-        Credential credential = Auth.authorize(scopes, "youtubepuller");
+        final Credential credential = Auth.authorize(scopes, credentialName);
 
         youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, credential).setApplicationName(
-                "youtube-feed").build();
+                appName).build();
 
         apiKey = new Properties().getProperty("youtube.apikey");
     }
 
-    List<SearchResult> getVideosSince(String channelId, Date dateSince) throws IOException {
-        YouTube.Search.List search = youtube.search().list("id,snippet");
+    /**
+     * Gets videos since a date from a channel.
+     * @param channelId channel to pull from
+     * @param dateSince date since to pull
+     * @return list of results
+     */
+    List<SearchResult> getVideosSince(final String channelId, final Date dateSince) throws IOException {
+        final YouTube.Search.List search = youtube.search().list("id,snippet");
 
         search.setKey(apiKey);
         search.setChannelId(channelId);
@@ -44,14 +62,19 @@ class YoutubePuller {
 
         search.setMaxResults(NUMBER_OF_RESULTS_RETURNED);
 
-        SearchListResponse searchResponse = search.execute();
+        final SearchListResponse searchResponse = search.execute();
         return searchResponse.getItems();
     }
 
-    List<Channel> queryChannels(String query) throws IOException {
-        List<Channel> results = new LinkedList<Channel>();
+    /**
+     * Searches for channels.
+     * @param query search keywords
+     * @return list of search results
+     */
+    List<Channel> queryChannels(final String query) throws IOException {
+        final List<Channel> results = new LinkedList<Channel>();
 
-        YouTube.Search.List search = youtube.search().list("id,snippet");
+        final YouTube.Search.List search = youtube.search().list("id,snippet");
 
         search.setKey(apiKey);
 
@@ -60,10 +83,10 @@ class YoutubePuller {
 
         search.setMaxResults(NUMBER_OF_RESULTS_RETURNED);
 
-        SearchListResponse searchResponse = search.execute();
-        List<SearchResult> searchResultList = searchResponse.getItems();
+        final SearchListResponse searchResponse = search.execute();
+        final List<SearchResult> searchResultList = searchResponse.getItems();
 
-        for (SearchResult searchResult : searchResultList) {
+        for (final SearchResult searchResult : searchResultList) {
             results.add(new Channel(searchResult.getSnippet().getChannelId(), searchResult.getSnippet().getChannelTitle()));
         }
 
@@ -72,27 +95,37 @@ class YoutubePuller {
 
     }
 
-    DateTime getVideoPublishedDate(String videoId) throws IOException {
-        VideoListResponse videoListResponse = youtube.videos().list("snippet").setId(videoId).execute();
+    /**
+     * Accesses the video's published date.
+     * @param videoId video ID to get published date of
+     * @return published date
+     */
+    DateTime getVideoPublishedDate(final String videoId) throws IOException {
+        final VideoListResponse videoListResponse = youtube.videos().list("snippet").setId(videoId).execute();
 
-        List<com.google.api.services.youtube.model.Video> videoList = videoListResponse.getItems();
+        final List<com.google.api.services.youtube.model.Video> videoList = videoListResponse.getItems();
 
-        Video video = videoList.get(0);
+        final Video video = videoList.get(0);
 
         return video.getSnippet().getPublishedAt();
 
     }
 
-    String getChannelTitle(String channelId) throws IOException {
-        YouTube.Search.List search = youtube.search().list("id,snippet");
+    /**
+     * Accesses the channel's title.
+     * @param channelId channel ID to pull title of
+     * @return channel title
+     */
+    String getChannelTitle(final String channelId) throws IOException {
+        final YouTube.Search.List search = youtube.search().list("id,snippet");
 
         search.setKey(apiKey);
 
         search.setChannelId(channelId);
         search.setType("channel");
 
-        SearchListResponse searchResponse = search.execute();
-        List<SearchResult> searchResultList = searchResponse.getItems();
+        final SearchListResponse searchResponse = search.execute();
+        final List<SearchResult> searchResultList = searchResponse.getItems();
 
         return searchResultList.get(0).getSnippet().getChannelTitle();
     }

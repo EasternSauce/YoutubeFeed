@@ -1,14 +1,16 @@
 package com.kamilk.ytfeed;
 
 /**
- * Created by kamil on 2016-08-05.
  * Initialization of MVC and running app.
  */
-
 public class App {
-    public static void main(String args[]) {
+    /**
+     * Main class of the app.
+     * @param args no arguments needed or used
+     */
+    public static void main(final String[] args) {
         //MVC creation
-        Controller controller = new Controller(new Model(), new View());
+        final Controller controller = new Controller(new Model(), new View());
         controller.runApp();
     }
 }

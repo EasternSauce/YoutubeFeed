@@ -20,41 +20,49 @@ import java.io.Reader;
 import java.util.List;
 
 /**
- * Created by kamil on 2016-08-05.
- * Authentication of Youtube API.
+ * Authentication of Youtube API. Contains methods for authorizing a user and caching credentials.
  */
-
 class Auth {
+    /**
+     * Define a global instance of the HTTP transport.
+     */
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    /**
+     * Define a global instance of the JSON factory.
+     */
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
+    /**
+     * This is the directory that will be used under the user's home directory where OAuth tokens will be stored.
+     */
     private static final String CREDENTIALS_DIRECTORY = ".oauth-credentials";
 
     /**
-     * authentication borrowed from Youtube Data API sample code
+     * Authorizes the installed application to access user's protected data.
+     *
+     * @param scopes list of scopes needed to run Youtube upload
+     * @param credentialDatastore name of the credential datastore to cache OAuth tokens
+     * @return credential info
      */
-    static Credential authorize(List<String> scopes, String credentialDatastore) throws IOException {
+    static Credential authorize(final List<String> scopes, final String credentialDatastore) throws IOException {
         final java.util.logging.Logger buggyLogger = java.util.logging.Logger.getLogger(FileDataStoreFactory.class.getName());
         buggyLogger.setLevel(java.util.logging.Level.SEVERE);
 
-        Reader clientSecretReader = new InputStreamReader(Auth.class.getResourceAsStream("/client_secrets.json"));
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, clientSecretReader);
+        final Reader clientSecretReader = new InputStreamReader(Auth.class.getResourceAsStream("/client_secrets.json"));
+        final GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, clientSecretReader);
 
         if (clientSecrets.getDetails().getClientId().startsWith("Enter")
                 || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-            System.out.println(
-                    "Enter Client ID and Secret from https://console.developers.google.com/project/_/apiui/credential "
-                            + "into src/main/resources/client_secrets.json");
             System.exit(1);
         }
 
-        FileDataStoreFactory fileDataStoreFactory = new FileDataStoreFactory(new File(System.getProperty("user.home") + "/" + CREDENTIALS_DIRECTORY));
-        DataStore<StoredCredential> datastore = fileDataStoreFactory.getDataStore(credentialDatastore);
+        final FileDataStoreFactory fileDataStoreFactory = new FileDataStoreFactory(new File(System.getProperty("user.home") + "/" + CREDENTIALS_DIRECTORY));
+        final DataStore<StoredCredential> datastore = fileDataStoreFactory.getDataStore(credentialDatastore);
 
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+        final GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, scopes).setCredentialDataStore(datastore)
                 .build();
 
-        LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(8080).build();
+        final LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(8080).build();
 
         return new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
     }

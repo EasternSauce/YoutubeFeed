@@ -9,20 +9,21 @@ import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 
 /**
- * Created by kamil on 2016-09-03.
  * Displaying and managing list of channels.
  */
-
 class ChannelsWindow extends Window {
     /**
-     * button to add new channel
+     * Button to add new channel.
      */
-    private JButton addButton;
+    private final JButton addButton;
     /**
-     * panel which lists every channel the user added
+     * Panel which lists every channel the user added.
      */
-    private JPanel channelsPanel;
+    private final JPanel channelsPanel;
 
+    /**
+     * Constuctor which sets window options, initializes window components ands adds them to main panel.
+     */
     ChannelsWindow() {
         super("Channels"); //window name label
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -34,33 +35,33 @@ class ChannelsWindow extends Window {
         channelsPanel = new JPanel();
         channelsPanel.setLayout(new BoxLayout(channelsPanel, BoxLayout.Y_AXIS));
 
-        JScrollPane channelsScrollPane = new JScrollPane(channelsPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        final JScrollPane channelsScrollPane = new JScrollPane(channelsPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         channelsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         channelsScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 20, (int) getBounds().getHeight() - 75));
 
         addComponent(addButton, 0, 0, 1, 1);
         addComponent(channelsScrollPane, 0, 1, 1, 1);
 
-        addMainPanel();
+        addToMainPanel();
     }
 
     /**
-     * used before refreshing channels panel
+     * Clears the panel component which displays channels. Used before refreshing channels panel.
      */
     void clearChannelsPanel() {
         channelsPanel.removeAll();
     }
 
     /**
-     * add entries to panel one by one during the refresh
+     * Adds entries to panel one by one during the refresh.
      * @param channel channel to add
      * @param mouseAdapter click listener
      */
-    void addChannelEntry(Channel channel, MouseAdapter mouseAdapter) {
-        JPanel entry = new JPanel();
+    void addChannelEntry(final Channel channel, final MouseAdapter mouseAdapter) {
+        final JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
-        JLabel title = new JLabel(channel.getTitle() + "   ");
-        JLabel remove = new JLabel("(remove)");
+        final JLabel title = new JLabel(channel.getTitle() + "   ");
+        final JLabel remove = new JLabel("(remove)");
         entry.add(title);
         entry.add(remove);
         channelsPanel.add(entry);
@@ -69,14 +70,18 @@ class ChannelsWindow extends Window {
     }
 
     /**
-     * used after refreshing channels panel
+     * Redraws the component that displays channels. Used after refreshing channels panel.
      */
     void updateChannelsPanel() {
         channelsPanel.revalidate();
         channelsPanel.repaint();
     }
 
-    void addAddButtonListener(ActionListener actionListener) {
+    /**
+     * Adds listener to 'add channel' button.
+     * @param actionListener listener to button push
+     */
+    void addAddButtonListener(final ActionListener actionListener) {
         addButton.addActionListener(actionListener);
     }
 }

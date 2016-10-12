@@ -1,15 +1,24 @@
 package com.kamilk.ytfeed;
 
 /**
- * Created by kamil on 2016-09-02.
  * Youtube channel info.
  */
-
 class Channel {
-    private String id;
-    private String title;
+    /**
+     * Youtube channel's ID.
+     */
+    private final String id;
+    /**
+     * Youtube channel's title.
+     */
+    private final String title;
 
-    Channel(String id, String title) {
+    /**
+     * Constructor initializing both parameters.
+     * @param id Youtube channel's ID
+     * @param title Youtube channel's title
+     */
+    Channel(final String id, final String title) {
         this.id = id;
         this.title = title;
     }
@@ -17,7 +26,6 @@ class Channel {
     String getId() {
         return id;
     }
-
     String getTitle() {
         return title;
     }

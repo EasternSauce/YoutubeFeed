@@ -9,15 +9,26 @@ import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 
 /**
- * Created by kamil on 2016-09-03.
  * Window where you can search for new channel to add to channel list.
  */
 
 class SearchWindow extends Window {
-    private JTextField searchBox;
-    private JButton searchButton;
-    private JPanel channelsPanel;
+    /**
+     * Search box to input search keywords.
+     */
+    private final JTextField searchBox;
+    /**
+     * Button to begin a search.
+     */
+    private final JButton searchButton;
+    /**
+     * Panel for displaying channels.
+     */
+    private final JPanel channelsPanel;
 
+    /**
+     * Constructor of search window, sets window options, creates components, adds the window to main panel.
+     */
     SearchWindow() {
         super("Search for channel");
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -32,7 +43,7 @@ class SearchWindow extends Window {
         channelsPanel = new JPanel();
         channelsPanel.setLayout(new BoxLayout(channelsPanel, BoxLayout.Y_AXIS));
 
-        JScrollPane channelsScrollPane = new JScrollPane(channelsPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        final JScrollPane channelsScrollPane = new JScrollPane(channelsPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         channelsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         channelsScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 20, (int) getBounds().getHeight() - 75));
 
@@ -40,26 +51,42 @@ class SearchWindow extends Window {
         addComponent(searchButton, 1, 0, 1, 1);
         addComponent(channelsScrollPane, 0, 1, 2, 1);
 
-        addMainPanel();
+        addToMainPanel();
     }
 
-    void addSearchButtonListener(ActionListener actionListener) {
+    /**
+     * Adds listener to search button.
+     * @param actionListener button push listener
+     */
+    void addSearchButtonListener(final ActionListener actionListener) {
         searchButton.addActionListener(actionListener);
     }
 
+    /**
+     * Gives access to user's search keywords.
+     * @return search box text
+     */
     String getSearchedTerm() {
         return searchBox.getText();
     }
 
-    void clearSearchResults() {
+    /**
+     * Clear the channel completely.
+     */
+    void clearChannelsPanel() {
         channelsPanel.removeAll();
     }
 
-    void addResultEntry(Channel channel, MouseAdapter mouseAdapter) {
-        JPanel entry = new JPanel();
+    /**
+     * Add a result channel to display.
+     * @param channel channel to display
+     * @param mouseAdapter add link listener
+     */
+    void addResultEntry(final Channel channel, final MouseAdapter mouseAdapter) {
+        final JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
-        JLabel title = new JLabel(channel.getTitle() + "   ");
-        JLabel addLink = new JLabel("(add)");
+        final JLabel title = new JLabel(channel.getTitle() + "   ");
+        final JLabel addLink = new JLabel("(add)");
 
         entry.add(title);
         entry.add(addLink);
@@ -68,6 +95,9 @@ class SearchWindow extends Window {
         makeClickable(addLink, mouseAdapter);
     }
 
+    /**
+     * update and draw the changes
+     */
     void updateSearchResults() {
         channelsPanel.revalidate();
         channelsPanel.repaint();

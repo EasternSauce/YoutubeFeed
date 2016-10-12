@@ -6,109 +6,57 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by kamil on 2016-09-03.
  * Model class of MVC pattern. Mostly just delegates methods from Youtube puller and feed.
  */
-
 class Model {
-    private Feed feed;
-    private YoutubePuller youtubePuller;
+    /**
+     * Holds feed instance.
+     */
+    private final Feed feed = new Feed();
+    /**
+     * Holds Youtube puller instance.
+     */
+    final private YoutubePuller youtubePuller = new YoutubePuller();
 
-    Model() {
-        feed = new Feed();
-        try {
-            youtubePuller = new YoutubePuller();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //load channels from file and serialized data from cache
+    /**
+     * Load channels from file and serialized data from cache.
+     */
     void loadFiles() {
         try {
+            youtubePuller.setCredentials("youtubepuller", "youtube-feed");
+
             String line;
 
-            InputStream fis = new FileInputStream("channel_ids.txt");
+            final InputStream fis = new FileInputStream("channel_ids.txt");
 
-            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-            BufferedReader br = new BufferedReader(isr);
+            final InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+            final BufferedReader br = new BufferedReader(isr);
             while ((line = br.readLine()) != null) {
                 feed.addChannelId(line, youtubePuller);
             }
 
             feed.deserializeFromCache("cache");
 
-        } catch(IOException e) {
+        } catch(final IOException e) {
             e.printStackTrace();
-        } catch(ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //delegations
-
-    void pullVideos(Channel channel, Date since) {
-        try {
-            feed.pullVideos(youtubePuller, channel, since);
-        } catch (IOException e) {
+        } catch(final ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    List<Video> getVideos() {
-        return feed.getVideos();
-    }
-
-    List<Channel> getChannels() {
-        return feed.getChannels();
-    }
-
-    List<Channel> queryChannels(String term) {
-        try {
-            return youtubePuller.queryChannels(term);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    void serializeToCache() {
-        try {
-            feed.serializeToCache("cache");
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void sortVideos() {
-        feed.sortVideos();
-    }
-    boolean isFeedChanged() {
-        return feed.isChanged();
-    }
-
-    void setFeedChanged(boolean changed) {
-        feed.setChanged(changed);
-    }
-
-    void addChannelToFeed(Channel channel){
-        feed.addChannel(channel);
-    }
-
-    void removeChannelFromFeed(Channel channel) {
-        feed.removeChannel(channel);
-    }
-
-    Date getLastUpdated() {
-        return feed.getLastUpdated();
-    }
-
-    void setLastUpdated(Date date) {
-        feed.setLastUpdated(date);
-    }
-
-    void clearVideos() {
-        feed.clearVideos();
-    }
+    //////DELEGATED:
+    void pullVideosWithPuller(final Channel channel, final Date since) throws IOException { feed.pullVideos(youtubePuller, channel, since); }
+    List<Video> getFeedVideos() { return feed.getVideos(); }
+    List<Channel> getFeedChannels() { return feed.getChannels(); }
+    List<Channel> queryChannelsWithPuller(final String term) throws IOException { return youtubePuller.queryChannels(term); }
+    void serializeFeedToCache() throws IOException { feed.serializeToCache("cache"); }
+    void sortVideosInFeed() { feed.sortVideos(); }
+    boolean isFeedChanged() { return feed.isChanged(); }
+    void setFeedChanged(final boolean changed) { feed.setChanged(changed); }
+    void addChannelToFeed(final Channel channel){ feed.addChannel(channel); }
+    void removeChannelFromFeed(final Channel channel) { feed.removeChannel(channel); }
+    Date getFeedLastUpdated() { return feed.getLastUpdated(); }
+    void setFeedLastUpdated(final Date date) { feed.setLastUpdated(date); }
+    void clearVideosFromFeed() { feed.clearVideos(); }
 
 }
