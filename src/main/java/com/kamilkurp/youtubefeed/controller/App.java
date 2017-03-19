@@ -1,4 +1,9 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.controller;
+
+import com.kamilkurp.youtubefeed.model.FeedModel;
+import com.kamilkurp.youtubefeed.view.ChannelsView;
+import com.kamilkurp.youtubefeed.view.MainView;
+import com.kamilkurp.youtubefeed.view.SearchView;
 
 /**
  * Initialization of MVC and running app.

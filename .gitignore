@@ -5,7 +5,7 @@ cache/
 channel_ids.txt
 out/
 target/
-youtube-feed.iml
+*.iml
 
 # Compiled source #
 ###################

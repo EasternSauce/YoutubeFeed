@@ -1,4 +1,4 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.view;
 
 import javax.swing.*;
 import java.awt.*;

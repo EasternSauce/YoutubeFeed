@@ -1,4 +1,6 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.view;
+
+import com.kamilkurp.youtubefeed.model.VideoData;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,7 +18,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Main window to display the video feed on.
  */
-class MainView extends WindowView {
+public class MainView extends WindowView {
     /**
      * Button to update video list.
      */
@@ -41,7 +43,7 @@ class MainView extends WindowView {
     /**
      * Constructor of main window, sets window options, creates components, adds the window to main panel.
      */
-    MainView() {
+    public MainView() {
         super("YoutubeFeed");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -112,7 +114,7 @@ class MainView extends WindowView {
      * Adds a listener for update button.
      * @param actionListener press listener
      */
-    void addUpdateButtonListener(ActionListener actionListener) {
+    public void addUpdateButtonListener(ActionListener actionListener) {
         updateButton.addActionListener(actionListener);
     }
 
@@ -120,14 +122,14 @@ class MainView extends WindowView {
      * Adds a listener for channels button.
      * @param actionListener press listener
      */
-    void addChannelsButtonListener(ActionListener actionListener) {
+    public void addChannelsButtonListener(ActionListener actionListener) {
         channelsButton.addActionListener(actionListener);
     }
 
     /**
      * Shows on videos panel that loading is ocurring.
      */
-    void showLoadingScreen() {
+    public void showLoadingScreen() {
         videosPanel.removeAll();
         JLabel loading = new JLabel("Loading...");
         videosPanel.add(loading);
@@ -141,7 +143,7 @@ class MainView extends WindowView {
     /**
      * Empties the videos panel completely.
      */
-    void clearVideosPanel() {
+    public void clearVideosPanel() {
         videosPanel.removeAll();
     }
 
@@ -150,7 +152,7 @@ class MainView extends WindowView {
      * @param video video to add
      * @param mouseAdapter listener to video clicks
      */
-    void addVideoEntryToPanel(VideoData video, MouseAdapter mouseAdapter) throws IOException{
+    public void addVideoEntryToPanel(VideoData video, MouseAdapter mouseAdapter) throws IOException{
         JPanel videoEntry = new JPanel();
         videoEntry.setLayout(new FlowLayout(FlowLayout.LEFT));
         videoEntry.setBackground(Color.GRAY);
@@ -184,11 +186,6 @@ class MainView extends WindowView {
 
         videoInfo.add(duration);
 
-        //final JLabel viewCount = new JLabel("Views: " + new String(video.getViewCount().toByteArray()));
-
-        //videoInfo.add(viewCount);
-
-
         videoEntry.add(videoInfo);
         videosPanel.add(videoEntry);
 
@@ -202,7 +199,7 @@ class MainView extends WindowView {
     /**
      * Update and redraw the panel.
      */
-    void updateVideosPanel() {
+    public void updateVideosPanel() {
         progressBar.setValue(0);
 
         changeFont(videosPanel, new Font("Verdana", Font.BOLD, 24));
@@ -217,7 +214,7 @@ class MainView extends WindowView {
      * Sets maximum progress bar value.
      * @param size maximum for progress bar
      */
-    void setProgressMax(int size) {
+    public void setProgressMax(int size) {
         progressBar.setMaximum(size);
     }
 
@@ -226,7 +223,7 @@ class MainView extends WindowView {
      * Increases progres by an ammount.
      * @param i the increase
      */
-    void increaseProgress(int i) {
+    public void increaseProgress(int i) {
         progressVal += i;
         progressBar.setValue(progressVal);
     }
@@ -234,7 +231,7 @@ class MainView extends WindowView {
     /**
      * Resets the progress bar to 0.
      */
-    void resetProgress() {
+    public void resetProgress() {
         progressBar.setValue(0);
         progressVal = 0;
     }

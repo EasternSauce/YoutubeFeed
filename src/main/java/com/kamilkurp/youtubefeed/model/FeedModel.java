@@ -1,4 +1,7 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.model;
+
+import com.kamilkurp.youtubefeed.credentials.Auth;
+import com.kamilkurp.youtubefeed.credentials.CredentialsException;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -8,7 +11,7 @@ import java.util.*;
 /**
  * Sorted feed of videos up to week old from selected channels.
  */
-class FeedModel {
+public class FeedModel {
     /**
      * List of videos to be displayed on main window.
      */
@@ -29,23 +32,23 @@ class FeedModel {
 
     private final Auth auth = new Auth();
 
-    Date getLastUpdated() {
+    public Date getLastUpdated() {
         return lastUpdated;
     }
-    void setLastUpdated(Date lastUpdated) {
+    public void setLastUpdated(Date lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
-    boolean isChanged() {
+    public boolean isChanged() {
         return changed;
     }
-    void setChanged(boolean changed) {
+    public void setChanged(boolean changed) {
         this.changed = changed;
     }
 
     /**
      * Load channels from file and serialized data from cache.
      */
-    void loadFiles() throws IOException, URISyntaxException, ClassNotFoundException, CredentialsException {
+    public void loadFiles() throws IOException, URISyntaxException, ClassNotFoundException, CredentialsException {
         auth.authorize();
 
         String line;
@@ -68,7 +71,7 @@ class FeedModel {
     /**
      * Returns a copy of video list.
      */
-    List<VideoData> getVideos() {
+    public List<VideoData> getVideos() {
         List<VideoData> videosCopy = new LinkedList<VideoData>();
 
         for(VideoData video : videos) {
@@ -93,7 +96,7 @@ class FeedModel {
         channels.add(channel);
     }
 
-    List<Channel> getChannels() {
+    public List<Channel> getChannels() {
         List<Channel> channelsCopy = new LinkedList<Channel>();
 
         for(Channel channel : channels) {
@@ -109,7 +112,7 @@ class FeedModel {
     /**
      * Simply sort the videos collection.
      */
-    void sortVideos() {
+    public void sortVideos() {
         Collections.sort(videos, new Comparator<VideoData>() {
             public int compare(VideoData vid1, VideoData vid2) {
                 long val1 = vid1.getPublishedDate().getValue();
@@ -123,7 +126,7 @@ class FeedModel {
     }
 
 
-    void addVideos(Channel channel, Date since) throws IOException {
+    public void addVideos(Channel channel, Date since) throws IOException {
 
         List<VideoData> vids = auth.getVideosSince(channel.getId(), since);
 
@@ -135,7 +138,7 @@ class FeedModel {
      * Adds channel if not already added.
      * @param channelToAdd channel to be added
      */
-    void addChannel(Channel channelToAdd){
+    public void addChannel(Channel channelToAdd){
         Channel channelToAddCopy = new Channel(channelToAdd.getId(), channelToAdd.getTitle()); //defensive copy
         for(Channel channel : channels) {
             if(channelToAddCopy.getId().equals(channel.getId())) {
@@ -150,7 +153,7 @@ class FeedModel {
      * Removes the channel specified.
      * @param channelToRemove channel to be removed
      */
-    void removeChannel(Channel channelToRemove) {
+    public void removeChannel(Channel channelToRemove) {
         Channel channelToRemoveCopy = new Channel(channelToRemove.getId(), channelToRemove.getTitle()); //defensive copy
         Iterator<Channel> i = channels.iterator();
         while (i.hasNext()) {
@@ -163,7 +166,7 @@ class FeedModel {
         }
     }
 
-    List<Channel> searchForChannels(String query) throws IOException{
+    public List<Channel> searchForChannels(String query) throws IOException{
         return auth.searchForChannels(query);
     }
 
@@ -198,7 +201,7 @@ class FeedModel {
      * Save videos cache to disk.
      * @param directory the cache directory
      */
-    void serializeToCache(String directory) throws IOException{
+    public void serializeToCache(String directory) throws IOException{
 
         File dir = new File(directory);
         File vidsDir = new File(directory + "/vids");
@@ -270,7 +273,7 @@ class FeedModel {
     /**
      * Delegate the video list to be cleared.
      */
-    void clearVideos() {
+    public void clearVideos() {
         videos.clear();
     }
 

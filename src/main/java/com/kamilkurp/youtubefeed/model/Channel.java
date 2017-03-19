@@ -1,9 +1,9 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.model;
 
 /**
  * Youtube channel info.
  */
-class Channel {
+public class Channel {
     /**
      * Youtube channel's ID.
      */
@@ -18,15 +18,15 @@ class Channel {
      * @param id Youtube channel's ID
      * @param title Youtube channel's title
      */
-    Channel(String id, String title) {
+    public Channel(String id, String title) {
         this.id = id;
         this.title = title;
     }
 
-    String getId() {
+    public String getId() {
         return id;
     }
-    String getTitle() {
+    public String getTitle() {
         return title;
     }
 }

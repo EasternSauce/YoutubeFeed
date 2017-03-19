@@ -1,4 +1,6 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.view;
+
+import com.kamilkurp.youtubefeed.model.Channel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +15,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Window where you can search for new channel to add to channel list.
  */
-class SearchView extends WindowView {
+public class SearchView extends WindowView {
     /**
      * Search box to input search keywords.
      */
@@ -30,9 +32,9 @@ class SearchView extends WindowView {
     /**
      * Constructor of search window, sets window options, creates components, adds the window to main panel.
      */
-    SearchView() {
+    public SearchView() {
         super("Search for channel");
-        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
 
 
         setBounds(200, 180, 1000, 900);
@@ -68,7 +70,7 @@ class SearchView extends WindowView {
      * Adds listener to search button.
      * @param actionListener button push listener
      */
-    void addSearchButtonListener(ActionListener actionListener) {
+    public void addSearchButtonListener(ActionListener actionListener) {
         searchButton.addActionListener(actionListener);
     }
 
@@ -76,14 +78,14 @@ class SearchView extends WindowView {
      * Gives access to user's search keywords.
      * @return search box text
      */
-    String getSearchedTerm() {
+    public String getSearchedTerm() {
         return searchBox.getText();
     }
 
     /**
      * Clear the channel completely.
      */
-    void clearChannelsPanel() {
+    public void clearChannelsPanel() {
         channelsPanel.removeAll();
     }
 
@@ -92,7 +94,7 @@ class SearchView extends WindowView {
      * @param channel channel to display
      * @param mouseAdapter add link listener
      */
-    void addResultEntry(Channel channel, MouseAdapter mouseAdapter) {
+    public void addResultEntry(Channel channel, MouseAdapter mouseAdapter) {
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
         JLabel title = new JLabel(channel.getTitle() + "   ");
@@ -108,7 +110,7 @@ class SearchView extends WindowView {
     /**
      * update and draw the changes
      */
-    void updateSearchResults() {
+    public void updateSearchResults() {
         changeFont(channelsPanel, new Font("Verdana", Font.BOLD, 24));
         channelsPanel.revalidate();
         channelsPanel.repaint();

@@ -1,4 +1,12 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.controller;
+
+import com.kamilkurp.youtubefeed.model.Channel;
+import com.kamilkurp.youtubefeed.credentials.CredentialsException;
+import com.kamilkurp.youtubefeed.model.FeedModel;
+import com.kamilkurp.youtubefeed.model.VideoData;
+import com.kamilkurp.youtubefeed.view.ChannelsView;
+import com.kamilkurp.youtubefeed.view.MainView;
+import com.kamilkurp.youtubefeed.view.SearchView;
 
 import java.awt.event.*;
 import java.io.FileNotFoundException;
@@ -10,7 +18,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
-import static java.awt.Desktop.*;
+import static java.awt.Desktop.getDesktop;
 
 /**
  * Controller class of MVC pattern.
@@ -26,7 +34,6 @@ class Controller {
     private final MainView mainView;
     private final ChannelsView channelsView;
     private final SearchView searchView;
-//    private final ErrorView errorView;
     /**
      * Used to prevent following updates from happening if the first one did not finish.
      */
@@ -402,6 +409,7 @@ class Controller {
         @Override
         public void mouseClicked(MouseEvent event) {
             try {
+                //noinspection Since15
                 getDesktop().browse(new URI(video.getUrl()));
             } catch (IOException e) {
                 mainView.displayErrorDialogAndExit("Url getting error", "Input output error while getting the url");

@@ -1,4 +1,6 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.view;
+
+import com.kamilkurp.youtubefeed.model.Channel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +15,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Displaying and managing list of channels.
  */
-class ChannelsView extends WindowView {
+public class ChannelsView extends WindowView {
     /**
      * Button to add new channel.
      */
@@ -26,9 +28,9 @@ class ChannelsView extends WindowView {
     /**
      * Constuctor which sets window options, initializes window components ands adds them to main panel.
      */
-    ChannelsView() {
+    public ChannelsView() {
         super("Channels");
-        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
 
         setBounds(150, 130, 800, 960);
 
@@ -58,7 +60,7 @@ class ChannelsView extends WindowView {
     /**
      * Clears the panel component which displays channels. Used before refreshing channels panel.
      */
-    void clearChannelsPanel() {
+    public void clearChannelsPanel() {
         channelsPanel.removeAll();
     }
 
@@ -67,7 +69,7 @@ class ChannelsView extends WindowView {
      * @param channel channel to add
      * @param mouseAdapter click listener
      */
-    void addChannelEntry(Channel channel, MouseAdapter mouseAdapter) {
+    public void addChannelEntry(Channel channel, MouseAdapter mouseAdapter) {
         JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
         JLabel title = new JLabel(channel.getTitle() + "   ");
@@ -82,7 +84,7 @@ class ChannelsView extends WindowView {
     /**
      * Redraws the component that displays channels. Used after refreshing channels panel.
      */
-    void updateChannelsPanel() {
+    public void updateChannelsPanel() {
         changeFont(channelsPanel, new Font("Verdana", Font.BOLD, 24));
         channelsPanel.revalidate();
         channelsPanel.repaint();
@@ -92,7 +94,7 @@ class ChannelsView extends WindowView {
      * Adds listener to 'add channel' button.
      * @param actionListener listener to button push
      */
-    void addAddButtonListener(ActionListener actionListener) {
+    public void addAddButtonListener(ActionListener actionListener) {
         addButton.addActionListener(actionListener);
     }
 }

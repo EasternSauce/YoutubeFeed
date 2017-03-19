@@ -1,4 +1,4 @@
-package com.kamilk.ytfeed;
+package com.kamilkurp.youtubefeed.view;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +8,7 @@ import java.awt.event.*;
  * View class of MVC pattern. Mostly just delegates from window instances.
  */
 abstract class WindowView extends JFrame {
-    ErrorDialog errorDialog;
+    private ErrorDialog errorDialog;
     /**
      * Window constructor, sets default window options.
      * @param title window title
@@ -58,11 +58,11 @@ abstract class WindowView extends JFrame {
     /**
      * Display the window.
      */
-    void display() {
+    public void display() {
         setVisible(true);
     }
 
-    void displayErrorDialogAndExit(String title, String text) {
+    public void displayErrorDialogAndExit(String title, String text) {
 
         errorDialog.setTitle(title);
         errorDialog.setText(text);
@@ -71,7 +71,7 @@ abstract class WindowView extends JFrame {
         errorDialog.setVisible(true);
     }
 
-    void addErrorDialogListener(ActionListener actionListener) {
+    public void addErrorDialogListener(ActionListener actionListener) {
         errorDialog.addConfirmListener(actionListener);
     }
 
