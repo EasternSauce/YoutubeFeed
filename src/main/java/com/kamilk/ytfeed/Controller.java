@@ -1,6 +1,5 @@
 package com.kamilk.ytfeed;
 
-import java.awt.*;
 import java.awt.event.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,6 +26,7 @@ class Controller {
     private final MainView mainView;
     private final ChannelsView channelsView;
     private final SearchView searchView;
+//    private final ErrorView errorView;
     /**
      * Used to prevent following updates from happening if the first one did not finish.
      */
@@ -48,28 +48,52 @@ class Controller {
      * Actually runs the MVC program.
      */
     void runApp() {
+
         handleListeners(); //add every listener
 
-        feedModel.loadFiles(); //load serialized data if found, also load channel list
+
+        try {
+            feedModel.loadFiles(); //load serialized data if found, also load channel list
+        } catch (CredentialsException e) {
+            mainView.displayErrorDialogAndExit("Credentials error", "Enter Client ID and Secret from "
+                    + "https://console.developers.google.com/project/_/apiui/credential into "
+                    + "the main directory file client_secrets.json");
+        } catch (IOException e) {
+            mainView.displayErrorDialogAndExit("Loading error", "Input output error while loading files, "
+                    + "make sure the directory .oauth-credentals had a file textDatastore");
+        } catch (URISyntaxException e) {
+            mainView.displayErrorDialogAndExit("Loading error", "URI syntax problem while loading files");
+        } catch (ClassNotFoundException e) {
+            mainView.displayErrorDialogAndExit("Loading error", "Class not found while loading files");
+        }
 
         mainView.display();
 
-        mainView.clearVideosPanel();
+            mainView.clearVideosPanel();
 
-        try {
-            for (VideoData video : feedModel.getVideos()) mainView.addVideoEntryToPanel(video, new VideoLinkListener(video));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mainView.updateVideosPanel();
+            try {
+                for (VideoData video : feedModel.getVideos()) {
+                    mainView.addVideoEntryToPanel(video, new VideoLinkListener(video));
+                }
+            }
+            catch (IOException e) {
+                mainView.displayErrorDialogAndExit("Video Entry Error", "Input output error while loading video entries");
+            }
+
+            mainView.updateVideosPanel();
 
         //dont block input when updating
         Thread thread = new Thread() {
             public void run() {
-                updateVideoList();
+                try {
+                    updateVideoList();
+                } catch (IOException e) {
+                    mainView.displayErrorDialogAndExit("Video List Update Error", "Input output error while updating video list");
+                }
             }
         };
         thread.start();
+
     }
 
     /**
@@ -81,24 +105,24 @@ class Controller {
         channelsView.addAddButtonListener(new AddButtonListener());
         searchView.addSearchButtonListener(new SearchButtonListener());
         channelsView.addWindowListener(new ChannelsWindowListener());
+
+        mainView.addErrorDialogListener(new ErrorDialogListener());
+        channelsView.addErrorDialogListener(new ErrorDialogListener());
+        searchView.addErrorDialogListener(new ErrorDialogListener());
     }
 
     /**
      * Gets the videos pulled from Youtube API and displays them on the main window. Displays the loading screen and progress bar while updating.
      * @param since how old can the videos' published date be
      */
-    private void pullAndShowVideos(Date since) {
+    private void pullAndShowVideos(Date since) throws IOException {
         mainView.showLoadingScreen();
 
         List<Channel> channels = feedModel.getChannels();
         mainView.setProgressMax(channels.size() * 10);
 
         for (Channel channel : channels) {
-            try {
-                feedModel.addVideos(channel, since);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            feedModel.addVideos(channel, since);
 
             mainView.increaseProgress(7);
         }
@@ -107,7 +131,7 @@ class Controller {
         try {
             feedModel.serializeToCache("cache");
         } catch (IOException e) {
-            e.printStackTrace();
+            mainView.displayErrorDialogAndExit("Serialization error", "Input output error while serializing cache");
         }
 
         mainView.clearVideosPanel();
@@ -118,7 +142,7 @@ class Controller {
                 mainView.increaseProgress(3);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            mainView.displayErrorDialogAndExit("Panel update error", "Input output error while adding video entries");
         }
 
         mainView.updateVideosPanel();
@@ -127,9 +151,9 @@ class Controller {
     }
 
     /**
-     * Updates video list but not wholly (only since the last time it was updated). Its way quicker than refreshing the whole list.
+     * Adds to already populated list videos uploaded since the last time it was updated. Its way quicker than refreshing the whole list.
      */
-    private void updateVideoList() {
+    private void updateVideoList() throws IOException {
         if(inProgress) return;
         inProgress = true;
 
@@ -139,7 +163,7 @@ class Controller {
     }
 
     /**
-     * Refreshes and reloads the video list completely. Takes a while.
+     * Refreshes and reloads the video list completely. Takes a while to complete.
      */
     private void refreshVideoList() {
         if(inProgress) return;
@@ -148,7 +172,11 @@ class Controller {
         feedModel.clearVideos();
 
         long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        pullAndShowVideos(new Date(System.currentTimeMillis() - (7 * DAY_IN_MS))); //pull videos 7 days old at most
+        try {
+            pullAndShowVideos(new Date(System.currentTimeMillis() - (7 * DAY_IN_MS))); //pull videos 7 days old at most
+        } catch (IOException e) {
+            mainView.displayErrorDialogAndExit("Pulling videos problem", "Problem during pulling and showing videos");
+        }
 
         inProgress = false;
 
@@ -180,14 +208,11 @@ class Controller {
     /**
      * Searches for videos and refreshes the results.
      */
-    private void performChannelSearch() {
+    private void performChannelSearch() throws IOException {
         List<Channel> results;
-        try {
-            results = feedModel.searchForChannels(searchView.getSearchedTerm());
-            refreshSearchResults(results);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        results = feedModel.searchForChannels(searchView.getSearchedTerm());
+        refreshSearchResults(results);
+
 
     }
 
@@ -202,7 +227,11 @@ class Controller {
         public void actionPerformed(ActionEvent e) {
             Thread thread = new Thread() {
                 public void run() {
-                    updateVideoList();
+                    try {
+                        updateVideoList();
+                    } catch (IOException e1) {
+                        mainView.displayErrorDialogAndExit("Updating videos error", "Input output error while updating the list after pushing the button");
+                    }
                 }
             };
             thread.start();
@@ -245,7 +274,11 @@ class Controller {
          * @param e unused listener event
          */
         public void actionPerformed(ActionEvent e) {
-            performChannelSearch();
+            try {
+                performChannelSearch();
+            } catch (IOException e1) {
+                mainView.displayErrorDialogAndExit("Channel search error", "Input output error while searching for channels");
+            }
         }
     }
 
@@ -269,17 +302,18 @@ class Controller {
                 feedModel.setChanged(false);
             }
 
+            PrintWriter writer = null;
             try {
-                PrintWriter writer = new PrintWriter("channel_ids.txt", "UTF-8");
-                for (Channel channel : feedModel.getChannels()) {
-                    writer.println(channel.getId());
-                }
-                writer.close();
+                writer = new PrintWriter("channel_ids.txt", "UTF-8");
             } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
+                mainView.displayErrorDialogAndExit("File not found error", "channel_ids.txt seems to be missing in program directory");
             } catch (UnsupportedEncodingException e1) {
-                e1.printStackTrace();
+                mainView.displayErrorDialogAndExit("Unsupported encoding error", "channel_ids.txt has unsupported encoding");
             }
+            for (Channel channel : feedModel.getChannels()) {
+                writer.println(channel.getId());
+            }
+            writer.close();
         }
     }
 
@@ -370,10 +404,19 @@ class Controller {
             try {
                 getDesktop().browse(new URI(video.getUrl()));
             } catch (IOException e) {
-                e.printStackTrace();
+                mainView.displayErrorDialogAndExit("Url getting error", "Input output error while getting the url");
             } catch (URISyntaxException e) {
-                e.printStackTrace();
+                mainView.displayErrorDialogAndExit("Url getting error", "Uri syntax error while getting the url");
             }
+
+        }
+    }
+
+    private class ErrorDialogListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            System.exit(1);
         }
     }
 }

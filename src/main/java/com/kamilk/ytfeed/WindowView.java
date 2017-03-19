@@ -8,12 +8,15 @@ import java.awt.event.*;
  * View class of MVC pattern. Mostly just delegates from window instances.
  */
 abstract class WindowView extends JFrame {
+    ErrorDialog errorDialog;
     /**
      * Window constructor, sets default window options.
      * @param title window title
      */
     WindowView(String title) {
         super(title);
+
+        errorDialog = new ErrorDialog(this, "error", "error");
 
         setResizable(true);
     }
@@ -59,15 +62,31 @@ abstract class WindowView extends JFrame {
         setVisible(true);
     }
 
+    void displayErrorDialogAndExit(String title, String text) {
+
+        errorDialog.setTitle(title);
+        errorDialog.setText(text);
+
+        errorDialog.pack();
+        errorDialog.setVisible(true);
+    }
+
+    void addErrorDialogListener(ActionListener actionListener) {
+        errorDialog.addConfirmListener(actionListener);
+    }
+
     /**
      * Makes the component clickable and provides a listener.
      * @param component the component to be made clickable
      * @param mouseAdapter the listener
      */
-    void makeClickable(JComponent component, MouseAdapter mouseAdapter) {
+    static void makeClickable(JComponent component, MouseAdapter mouseAdapter) {
         component.setCursor(new Cursor(Cursor.HAND_CURSOR));
         component.addMouseListener(mouseAdapter);
     }
+
+
+
 
     static void changeFont (Component component, Font font) {
         component.setFont (font);
@@ -77,4 +96,7 @@ abstract class WindowView extends JFrame {
             }
         }
     }
+
+
+
 }

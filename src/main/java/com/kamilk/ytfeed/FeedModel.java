@@ -45,31 +45,24 @@ class FeedModel {
     /**
      * Load channels from file and serialized data from cache.
      */
-    void loadFiles() {
-        try {
-            auth.authorize();
+    void loadFiles() throws IOException, URISyntaxException, ClassNotFoundException, CredentialsException {
+        auth.authorize();
 
-            String line;
+        String line;
 
-            File channelsFile = new File("channel_ids.txt");
-            channelsFile.createNewFile();
-            InputStream fis = new FileInputStream("channel_ids.txt");
+        File channelsFile = new File("channel_ids.txt");
+        channelsFile.createNewFile();
+        InputStream fis = new FileInputStream("channel_ids.txt");
 
-            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-            BufferedReader br = new BufferedReader(isr);
-            while ((line = br.readLine()) != null) {
-                addChannelId(line);
-            }
-
-            deserializeFromCache("cache");
-
-        } catch(IOException e) {
-            e.printStackTrace();
-        } catch(URISyntaxException e) {
-            e.printStackTrace();
-        } catch(ClassNotFoundException e) {
-            e.printStackTrace();
+        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+        BufferedReader br = new BufferedReader(isr);
+        while ((line = br.readLine()) != null) {
+            addChannelId(line);
         }
+
+        deserializeFromCache("cache");
+
+
     }
 
     /**

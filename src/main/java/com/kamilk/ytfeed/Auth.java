@@ -38,16 +38,15 @@ class Auth {
     }
 
 
-    void authorize() throws IOException, URISyntaxException {
-        Reader clientSecretReader = new InputStreamReader(Auth.class.getClassLoader().getResourceAsStream("client_secrets.json"));
+    void authorize() throws URISyntaxException, CredentialsException, IOException {
+        Reader clientSecretReader = new InputStreamReader(Auth.class.getClassLoader()
+                .getResourceAsStream("client_secrets.json"));
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, clientSecretReader);
 
         if (clientSecrets.getDetails().getClientId().startsWith("Enter")
                 || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-            System.out.println(
-                    "Enter Client ID and Secret from https://console.developers.google.com/project/_/apiui/credential "
-                            + "into src/main/resources/client_secrets.json");
-            System.exit(1);
+            throw new CredentialsException();
+
         }
 
         String credentialDir = ".oauth-credentials";
@@ -144,7 +143,8 @@ class Auth {
         List<SearchResult> searchResultList = searchResponse.getItems();
 
         for (SearchResult searchResult : searchResultList) {
-            results.add(new Channel(searchResult.getSnippet().getChannelId(), searchResult.getSnippet().getChannelTitle()));
+            results.add(new Channel(searchResult.getSnippet().getChannelId(), searchResult.getSnippet()
+                    .getChannelTitle()));
         }
 
 
