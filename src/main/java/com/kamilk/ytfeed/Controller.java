@@ -11,6 +11,8 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
+import static java.awt.Desktop.*;
+
 /**
  * Controller class of MVC pattern.
  */
@@ -18,11 +20,13 @@ class Controller {
     /**
      * Model of MVC.
      */
-    private final Model model;
+    private final FeedModel feedModel;
     /**
      * View of MVC.
      */
-    private final View view;
+    private final MainView mainView;
+    private final ChannelsView channelsView;
+    private final SearchView searchView;
     /**
      * Used to prevent following updates from happening if the first one did not finish.
      */
@@ -30,12 +34,14 @@ class Controller {
 
     /**
      * Constructor of controller.
-     * @param model model of MVC
-     * @param view view of MVC
+     * @param model feedModel of MVC
      */
-    Controller(final Model model, final View view) {
-        this.model = model;
-        this.view = view;
+    Controller(FeedModel model, MainView mainView, ChannelsView channelsView, SearchView searchView) {
+        this.feedModel = model;
+        this.mainView = mainView;
+        this.channelsView = channelsView;
+        this.searchView = searchView;
+
     }
 
     /**
@@ -44,21 +50,21 @@ class Controller {
     void runApp() {
         handleListeners(); //add every listener
 
-        model.loadFiles(); //load serialized data if found, also load channel list
+        feedModel.loadFiles(); //load serialized data if found, also load channel list
 
-        view.displayMainWindow();
+        mainView.display();
 
-        view.clearMainWindowVideosPanel();
+        mainView.clearVideosPanel();
 
         try {
-            for (final Video video : model.getFeedVideos()) view.addMainWindowVideoEntry(video, new VideoLinkListener(video));
-        } catch (final IOException e) {
+            for (VideoData video : feedModel.getVideos()) mainView.addVideoEntryToPanel(video, new VideoLinkListener(video));
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        view.updateMainWindowVideosPanel();
+        mainView.updateVideosPanel();
 
         //dont block input when updating
-        final Thread thread = new Thread() {
+        Thread thread = new Thread() {
             public void run() {
                 updateVideoList();
             }
@@ -70,54 +76,54 @@ class Controller {
      * Adds every component listener thats needed.
      */
     private void handleListeners() {
-        view.addMainWindowUpdateButtonListener(new UpdateButtonListener());
-        view.addMainWindowChannelsButtonListener(new ChannelsButtonListener());
-        view.addChannelsWindowAddButtonListener(new AddButtonListener());
-        view.addSearchWindowSearchButtonListener(new SearchButtonListener());
-        view.addChannelsWindowListener(new ChannelsWindowListener());
+        mainView.addUpdateButtonListener(new UpdateButtonListener());
+        mainView.addChannelsButtonListener(new ChannelsButtonListener());
+        channelsView.addAddButtonListener(new AddButtonListener());
+        searchView.addSearchButtonListener(new SearchButtonListener());
+        channelsView.addWindowListener(new ChannelsWindowListener());
     }
 
     /**
      * Gets the videos pulled from Youtube API and displays them on the main window. Displays the loading screen and progress bar while updating.
      * @param since how old can the videos' published date be
      */
-    private void pullAndShowVideos(final Date since) {
-        view.showMainWindowLoadingScreen();
+    private void pullAndShowVideos(Date since) {
+        mainView.showLoadingScreen();
 
-        final List<Channel> channels = model.getFeedChannels();
-        view.setMainWindowProgressMax(channels.size() * 10);
+        List<Channel> channels = feedModel.getChannels();
+        mainView.setProgressMax(channels.size() * 10);
 
-        for (final Channel channel : channels) {
+        for (Channel channel : channels) {
             try {
-                model.pullVideosWithPuller(channel, since);
-            } catch (final IOException e) {
+                feedModel.addVideos(channel, since);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            view.increaseMainWindowProgress(7);
+            mainView.increaseProgress(7);
         }
-        model.setFeedLastUpdated(new Date()); //set last updated to current time
-        model.sortVideosInFeed();
+        feedModel.setLastUpdated(new Date());
+        feedModel.sortVideos();
         try {
-            model.serializeFeedToCache();
-        } catch (final IOException e) {
+            feedModel.serializeToCache("cache");
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        view.clearMainWindowVideosPanel();
+        mainView.clearVideosPanel();
 
         try {
-            for (final Video video : model.getFeedVideos()) {
-                view.addMainWindowVideoEntry(video, new VideoLinkListener(video));
-                view.increaseMainWindowProgress(3);
+            for (VideoData video : feedModel.getVideos()) {
+                mainView.addVideoEntryToPanel(video, new VideoLinkListener(video));
+                mainView.increaseProgress(3);
             }
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        view.updateMainWindowVideosPanel();
+        mainView.updateVideosPanel();
 
-        view.resetMainWindowProgress();
+        mainView.resetProgress();
     }
 
     /**
@@ -127,7 +133,7 @@ class Controller {
         if(inProgress) return;
         inProgress = true;
 
-        pullAndShowVideos(model.getFeedLastUpdated());
+        pullAndShowVideos(feedModel.getLastUpdated());
 
         inProgress = false;
     }
@@ -139,9 +145,9 @@ class Controller {
         if(inProgress) return;
         inProgress = true;
 
-        model.clearVideosFromFeed();
+        feedModel.clearVideos();
 
-        final long DAY_IN_MS = 1000 * 60 * 60 * 24;
+        long DAY_IN_MS = 1000 * 60 * 60 * 24;
         pullAndShowVideos(new Date(System.currentTimeMillis() - (7 * DAY_IN_MS))); //pull videos 7 days old at most
 
         inProgress = false;
@@ -152,34 +158,34 @@ class Controller {
      * Reload and display the channels list.
      */
     private void refreshChannelList() {
-        view.clearChannelsWindowChannelsPanel();
-        for (final Channel channel : model.getFeedChannels()) {
-            view.addChannelsWindowChannelEntry(channel, new RemoveLinkListener(channel));
+        channelsView.clearChannelsPanel();
+        for (Channel channel : feedModel.getChannels()) {
+            channelsView.addChannelEntry(channel, new RemoveLinkListener(channel));
         }
-        view.updateChannelsWindowChannelsPanel();
+        channelsView.updateChannelsPanel();
     }
 
     /**
      * Reloads and displays search results.
      * @param results list of results
      */
-    private void refreshSearchResults(final List<Channel> results) {
-        view.clearSearchWindowSearchResults();
-        for (final Channel result : results) {
-            view.addSearchWindowResultEntry(result, new AddLinkListener(result));
+    private void refreshSearchResults(List<Channel> results) {
+        searchView.clearChannelsPanel();
+        for (Channel result : results) {
+            searchView.addResultEntry(result, new AddLinkListener(result));
         }
-        view.updateSearchWindowSearchResults();
+        searchView.updateSearchResults();
     }
 
     /**
      * Searches for videos and refreshes the results.
      */
     private void performChannelSearch() {
-        final List<Channel> results;
+        List<Channel> results;
         try {
-            results = model.queryChannelsWithPuller(view.getSearchWindowSearchedTerm());
+            results = feedModel.searchForChannels(searchView.getSearchedTerm());
             refreshSearchResults(results);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -193,8 +199,8 @@ class Controller {
          * Listener action to update button on main window. Starts a background thread so as not to block the main thread with the update.
          * @param e unused listener event
          */
-        public void actionPerformed(final ActionEvent e) {
-            final Thread thread = new Thread() {
+        public void actionPerformed(ActionEvent e) {
+            Thread thread = new Thread() {
                 public void run() {
                     updateVideoList();
                 }
@@ -211,9 +217,9 @@ class Controller {
          * Listener action to update button on channels window. Displays the window afterwards.
          * @param e unused listener event
          */
-        public void actionPerformed(final ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
             refreshChannelList();
-            view.displayChannelsWindow();
+            channelsView.display();
         }
     }
 
@@ -225,8 +231,8 @@ class Controller {
          * Shows search window.
          * @param e unused listener event
          */
-        public void actionPerformed(final ActionEvent e) {
-            view.showSearchWindowChannelSearch();
+        public void actionPerformed(ActionEvent e) {
+            searchView.setVisible(true);
         }
     }
 
@@ -238,7 +244,7 @@ class Controller {
          * Perform search based on the keywords in the search box input.
          * @param e unused listener event
          */
-        public void actionPerformed(final ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
             performChannelSearch();
         }
     }
@@ -252,26 +258,26 @@ class Controller {
          * Act on window close. If the feed will be changed, starts a new thread that updates video list. Writes channel IDs to file.
          */
         @Override
-        public void windowClosing(final WindowEvent e) {
-            if (model.isFeedChanged()) {
-                final Thread thread = new Thread() {
+        public void windowClosing(WindowEvent e) {
+            if (feedModel.isChanged()) {
+                Thread thread = new Thread() {
                     public void run() {
                         refreshVideoList();
                     }
                 };
                 thread.start();
-                model.setFeedChanged(false);
+                feedModel.setChanged(false);
             }
 
             try {
-                final PrintWriter writer = new PrintWriter("channel_ids.txt", "UTF-8");
-                for (final Channel channel : model.getFeedChannels()) {
+                PrintWriter writer = new PrintWriter("channel_ids.txt", "UTF-8");
+                for (Channel channel : feedModel.getChannels()) {
                     writer.println(channel.getId());
                 }
                 writer.close();
-            } catch (final FileNotFoundException e1) {
+            } catch (FileNotFoundException e1) {
                 e1.printStackTrace();
-            } catch (final UnsupportedEncodingException e1) {
+            } catch (UnsupportedEncodingException e1) {
                 e1.printStackTrace();
             }
         }
@@ -290,7 +296,7 @@ class Controller {
          * Constructor remembers the channel it was used for.
          * @param channel link depends on the channel ID, of course
          */
-        AddLinkListener(final Channel channel) {
+        AddLinkListener(Channel channel) {
             super();
             this.channel = channel;
         }
@@ -300,15 +306,11 @@ class Controller {
          * @param e unused click event
          */
         @Override
-        public void mouseClicked(final MouseEvent e) {
-            model.addChannelToFeed(channel);
+        public void mouseClicked(MouseEvent e) {
+            feedModel.addChannel(channel);
 
-            //Thread thread = new Thread() {
-                //public void run() {
-                    refreshChannelList(); //is bg thread needed?? to be tested
-                //}
-            //};
-            //thread.start();
+            refreshChannelList();
+
         }
     }
 
@@ -325,7 +327,7 @@ class Controller {
          * Constructor additionally remembers the channel.
          * @param channel the removed channel
          */
-        RemoveLinkListener(final Channel channel) {
+        RemoveLinkListener(Channel channel) {
             super();
             this.channel = channel;
 
@@ -336,8 +338,8 @@ class Controller {
          * @param e unused event
          */
         @Override
-        public void mouseClicked(final MouseEvent e) {
-            model.removeChannelFromFeed(channel);
+        public void mouseClicked(MouseEvent e) {
+            feedModel.removeChannel(channel);
             refreshChannelList();
         }
     }
@@ -349,13 +351,13 @@ class Controller {
         /**
          * The clickable video.
          */
-        private final Video video;
+        private final VideoData video;
 
         /**
          * Constructors remembers the video.
          * @param video remembered video
          */
-        VideoLinkListener(final Video video) {
+        VideoLinkListener(VideoData video) {
             this.video = video;
         }
 
@@ -364,13 +366,12 @@ class Controller {
          * @param event unused event
          */
         @Override
-        public void mouseClicked(final MouseEvent event) {
+        public void mouseClicked(MouseEvent event) {
             try {
-                //noinspection Since15
-                Desktop.getDesktop().browse(new URI(video.getUrl()));
-            } catch (final IOException e) {
+                getDesktop().browse(new URI(video.getUrl()));
+            } catch (IOException e) {
                 e.printStackTrace();
-            } catch (final URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
         }

@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.io.IOException;
 import java.net.URL;
@@ -14,7 +16,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Main window to display the video feed on.
  */
-class MainWindow extends Window {
+class MainView extends WindowView {
     /**
      * Button to update video list.
      */
@@ -39,12 +41,12 @@ class MainWindow extends Window {
     /**
      * Constructor of main window, sets window options, creates components, adds the window to main panel.
      */
-    MainWindow() {
+    MainView() {
         super("YoutubeFeed");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(50, 30, 850, screenSize.height - 100);
+        //final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(50, 30, 2000, 1200);
 
         updateButton = new JButton("Update");
         channelsButton = new JButton("Channels");
@@ -54,24 +56,63 @@ class MainWindow extends Window {
 
         final JScrollPane videosScrollPane = new JScrollPane(videosPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         videosScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        videosScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 20, (int) getBounds().getHeight() - 75));
+        videosScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 100, (int) getBounds().getHeight() - 200));
 
         progressBar = new JProgressBar();
         progressBar.setMinimum(0);
 
-        addComponent(updateButton, 0, 0, 1, 1);
-        addComponent(channelsButton, 1, 0, 1, 1);
-        addComponent(videosScrollPane, 0, 1, 2, 1);
-        addComponent(progressBar, 0, 2, 2, 1);
+        GridBagConstraints c = new GridBagConstraints();
 
-        addToMainPanel();
+
+        c.insets = new Insets(10, 10, 10, 10);
+        c.weightx = 1;
+        c.weighty = 1;
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        mainPanel.add(updateButton, c);
+
+        c.gridx = 1;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        mainPanel.add(channelsButton, c);
+
+        c.ipadx = 0;
+        c.ipady = 0;
+        c.insets = new Insets(0, 0, 0, 0);
+
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridwidth = 2;
+        c.gridheight = 1;
+        mainPanel.add(videosScrollPane, c);
+
+        c.insets = new Insets(10, 10, 10, 10);
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 2;
+        c.gridheight = 1;
+        mainPanel.add(progressBar, c);
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                videosScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 100, (int) getBounds().getHeight() - 200));
+            }
+        });
+
+        addMainPanel();
     }
 
     /**
      * Adds a listener for update button.
      * @param actionListener press listener
      */
-    void addUpdateButtonListener(final ActionListener actionListener) {
+    void addUpdateButtonListener(ActionListener actionListener) {
         updateButton.addActionListener(actionListener);
     }
 
@@ -79,7 +120,7 @@ class MainWindow extends Window {
      * Adds a listener for channels button.
      * @param actionListener press listener
      */
-    void addChannelsButtonListener(final ActionListener actionListener) {
+    void addChannelsButtonListener(ActionListener actionListener) {
         channelsButton.addActionListener(actionListener);
     }
 
@@ -88,8 +129,11 @@ class MainWindow extends Window {
      */
     void showLoadingScreen() {
         videosPanel.removeAll();
-        final JLabel loading = new JLabel("Loading...");
+        JLabel loading = new JLabel("Loading...");
         videosPanel.add(loading);
+
+
+        changeFont(videosPanel, new Font("Verdana", Font.BOLD, 24));
         videosPanel.revalidate();
         videosPanel.repaint();
     }
@@ -106,43 +150,51 @@ class MainWindow extends Window {
      * @param video video to add
      * @param mouseAdapter listener to video clicks
      */
-    void addVideoEntryToPanel(final Video video, final MouseAdapter mouseAdapter) throws IOException{
-        final JPanel videoEntry = new JPanel();
+    void addVideoEntryToPanel(VideoData video, MouseAdapter mouseAdapter) throws IOException{
+        JPanel videoEntry = new JPanel();
         videoEntry.setLayout(new FlowLayout(FlowLayout.LEFT));
         videoEntry.setBackground(Color.GRAY);
 
-        final JPanel videoInfo = new JPanel();
+        JPanel videoInfo = new JPanel();
 
         videoInfo.setLayout(new BoxLayout(videoInfo, BoxLayout.Y_AXIS));
         videoInfo.setBackground(Color.GRAY);
 
-        final JLabel thumbnail = new JLabel(new ImageIcon(ImageIO.read(new URL(video.getThumbnailUrl()))));
+        JLabel thumbnail = new JLabel(new ImageIcon(ImageIO.read(new URL(video.getThumbnailUrl()))));
 
 
         videoEntry.add(thumbnail);
 
 
-        final JLabel title = new JLabel(video.getTitle());
+        JLabel title = new JLabel(video.getTitle());
 
 
         videoInfo.add(title);
 
-        final JLabel published = new JLabel("Published on " + video.getPrettyDate());
+        JLabel published = new JLabel("Published on " + video.getPublishedAt());
 
 
         videoInfo.add(published);
 
-        final JLabel channel = new JLabel("By " + video.getChannelTitle());
-
+        JLabel channel = new JLabel("By " + video.getChannelTitle());
 
         videoInfo.add(channel);
+
+        JLabel duration = new JLabel("Duration: " + video.getDuration());
+
+        videoInfo.add(duration);
+
+        //final JLabel viewCount = new JLabel("Views: " + new String(video.getViewCount().toByteArray()));
+
+        //videoInfo.add(viewCount);
 
 
         videoEntry.add(videoInfo);
         videosPanel.add(videoEntry);
 
-        final JLabel space = new JLabel(" ");
+        JLabel space = new JLabel(" ");
         videosPanel.add(space);
+
 
         makeClickable(videoEntry, mouseAdapter);
     }
@@ -152,6 +204,8 @@ class MainWindow extends Window {
      */
     void updateVideosPanel() {
         progressBar.setValue(0);
+
+        changeFont(videosPanel, new Font("Verdana", Font.BOLD, 24));
 
         videosPanel.revalidate();
         videosPanel.repaint();
@@ -163,7 +217,7 @@ class MainWindow extends Window {
      * Sets maximum progress bar value.
      * @param size maximum for progress bar
      */
-    void setProgressMax(final int size) {
+    void setProgressMax(int size) {
         progressBar.setMaximum(size);
     }
 
@@ -172,7 +226,7 @@ class MainWindow extends Window {
      * Increases progres by an ammount.
      * @param i the increase
      */
-    void increaseProgress(final int i) {
+    void increaseProgress(int i) {
         progressVal += i;
         progressBar.setValue(progressVal);
     }

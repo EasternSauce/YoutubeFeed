@@ -3,6 +3,8 @@ package com.kamilk.ytfeed;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 
 import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
@@ -11,7 +13,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 /**
  * Window where you can search for new channel to add to channel list.
  */
-class SearchWindow extends Window {
+class SearchView extends WindowView {
     /**
      * Search box to input search keywords.
      */
@@ -28,15 +30,15 @@ class SearchWindow extends Window {
     /**
      * Constructor of search window, sets window options, creates components, adds the window to main panel.
      */
-    SearchWindow() {
+    SearchView() {
         super("Search for channel");
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
 
-        setBounds(200, 180, 400, 480);
+        setBounds(200, 180, 1000, 900);
 
         searchBox = new JTextField();
-        searchBox.setPreferredSize(new Dimension(200, 30));
+        searchBox.setPreferredSize(new Dimension(700, 60));
         searchButton = new JButton("Search");
 
         channelsPanel = new JPanel();
@@ -44,20 +46,29 @@ class SearchWindow extends Window {
 
         final JScrollPane channelsScrollPane = new JScrollPane(channelsPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         channelsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        channelsScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 20, (int) getBounds().getHeight() - 75));
+//        channelsScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 20, (int) getBounds().getHeight() - 75));
+        channelsScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 100, (int) getBounds().getHeight() - 200));
 
-        addComponent(searchBox, 0, 0, 1, 1);
-        addComponent(searchButton, 1, 0, 1, 1);
-        addComponent(channelsScrollPane, 0, 1, 2, 1);
+        addComponent(searchBox, 0, 0, 1, 1, 0.1f, 0.1f);
+        addComponent(searchButton, 1, 0, 1, 1, 0.1f, 0.1f);
+        addComponent(channelsScrollPane, 0, 1, 2, 1, 0.1f, 0.1f);
 
-        addToMainPanel();
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                channelsScrollPane.setPreferredSize(new Dimension((int) getBounds().getWidth() - 100, (int) getBounds().getHeight() - 200));
+            }
+        });
+
+        addMainPanel();
     }
 
     /**
      * Adds listener to search button.
      * @param actionListener button push listener
      */
-    void addSearchButtonListener(final ActionListener actionListener) {
+    void addSearchButtonListener(ActionListener actionListener) {
         searchButton.addActionListener(actionListener);
     }
 
@@ -81,11 +92,11 @@ class SearchWindow extends Window {
      * @param channel channel to display
      * @param mouseAdapter add link listener
      */
-    void addResultEntry(final Channel channel, final MouseAdapter mouseAdapter) {
-        final JPanel entry = new JPanel();
+    void addResultEntry(Channel channel, MouseAdapter mouseAdapter) {
+        JPanel entry = new JPanel();
         entry.setLayout(new BoxLayout(entry, BoxLayout.X_AXIS));
-        final JLabel title = new JLabel(channel.getTitle() + "   ");
-        final JLabel addLink = new JLabel("(add)");
+        JLabel title = new JLabel(channel.getTitle() + "   ");
+        JLabel addLink = new JLabel("(add)");
 
         entry.add(title);
         entry.add(addLink);
@@ -98,7 +109,9 @@ class SearchWindow extends Window {
      * update and draw the changes
      */
     void updateSearchResults() {
+        changeFont(channelsPanel, new Font("Verdana", Font.BOLD, 24));
         channelsPanel.revalidate();
         channelsPanel.repaint();
+
     }
 }

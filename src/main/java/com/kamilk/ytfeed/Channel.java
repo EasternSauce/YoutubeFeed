@@ -18,7 +18,7 @@ class Channel {
      * @param id Youtube channel's ID
      * @param title Youtube channel's title
      */
-    Channel(final String id, final String title) {
+    Channel(String id, String title) {
         this.id = id;
         this.title = title;
     }

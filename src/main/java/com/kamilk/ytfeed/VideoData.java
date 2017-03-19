@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * Class representing single video and its data.
  */
-class Video implements Serializable{
+class VideoData implements Serializable{
     /**
      * Youtube video title.
      */
@@ -17,7 +17,7 @@ class Video implements Serializable{
     /**
      * Youtube video published date.
      */
-    private DateTime published;
+    private DateTime publishedDate;
     /**
      * Youtube video ID.
      */
@@ -31,27 +31,37 @@ class Video implements Serializable{
      */
     private String channelTitle;
 
+
+    private String duration;
+
+
     String getTitle() {
         return title;
     }
 
-    void setTitle(final String title) {
+    void setTitle(String title) {
         this.title = title;
     }
 
-    DateTime getPublished() {
-        return published;
+    String getPublishedAt() {
+        Date date = new Date(publishedDate.getValue());
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return format.format(date);
     }
 
-    void setPublished(final DateTime published) {
-        this.published = published;
+    DateTime getPublishedDate() {
+        return publishedDate;
+    }
+
+    void setPublishedDate(DateTime date) {
+        this.publishedDate = date;
     }
 
     String getId() {
         return id;
     }
 
-    void setId(final String id) {
+    void setId(String id) {
         this.id = id;
     }
 
@@ -59,18 +69,11 @@ class Video implements Serializable{
         return "https://www.youtube.com/watch?v=" + getId();
     }
 
-    String getPrettyDate() {
-        final Date date = new Date(published.getValue());
-        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        //format.setTimeZone(TimeZone.getTimeZone("Warsaw")); //not needed apparently because i already get the time of my timezone
-        return format.format(date);
-    }
-
     String getThumbnailUrl() {
         return thumbnailUrl;
     }
 
-    void setThumbnailUrl(final String thumbnailUrl) {
+    void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
     }
 
@@ -78,7 +81,16 @@ class Video implements Serializable{
         return channelTitle;
     }
 
-    void setChannelTitle(final String channelTitle) {
+    void setChannelTitle(String channelTitle) {
         this.channelTitle = channelTitle;
     }
+
+    String getDuration() {
+        return duration;
+    }
+
+    void setDuration(String duration) {
+        this.duration = duration;
+    }
+
 }
