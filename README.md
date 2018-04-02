@@ -4,7 +4,7 @@ New features:
 - now uses JavaFX
 - more responsive GUI
 - thumbnails load asynchronously (video list loads way faster, thumbnails show after a while)
-- temporarily removed chaching videos (was causing many problems)
+- temporarily removed caching videos (was causing many problems)
 - code refactored, codebase reduced by 50%
 
 YoutubeFeed is a desktop application that displays a feed of recently uploaded videos from Youtube channels you choose, similarly to how Youtube subscriptions work, except:
