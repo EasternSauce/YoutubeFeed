@@ -18,8 +18,7 @@ Any dependencies are covered by the Maven pom.xml file. Just import everything a
 
 ## Prerequisites
 
-- Java 7 or higher
-- Swing GUI Toolkit
+- Java 8
 - Youtube Data API v3
 - Google Analytics API
 
