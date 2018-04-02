@@ -1,4 +1,4 @@
-package com.kamilkurp.youtubefeed.credentials;
+package com.kamilkurp.youtubefeed.ytapi;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.StoredCredential;
@@ -16,16 +16,19 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import com.google.common.collect.Lists;
-import com.kamilkurp.youtubefeed.model.Channel;
+import com.kamilkurp.youtubefeed.model.ChannelData;
 import com.kamilkurp.youtubefeed.model.VideoData;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+
+
+
 
 public class Auth {
     final private HttpTransport httpTransport = new NetHttpTransport();
@@ -34,13 +37,16 @@ public class Auth {
     final private String apiKey = new Properties().getProperty("youtube.apikey");
     private final long NUMBER_OF_RESULTS_RETURNED = 7;
 
+    public class CredentialsException extends Exception{}
+
+
     public Auth() {
         Logger buggyLogger = java.util.logging.Logger.getLogger(FileDataStoreFactory.class.getName());
         buggyLogger.setLevel(java.util.logging.Level.SEVERE);
     }
 
 
-    public void authorize() throws URISyntaxException, CredentialsException, IOException {
+    public void authorize() throws CredentialsException, IOException {
         Reader clientSecretReader = new InputStreamReader(Auth.class.getClassLoader()
                 .getResourceAsStream("client_secrets.json"));
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, clientSecretReader);
@@ -100,7 +106,7 @@ public class Auth {
     }
 
     public List<VideoData> getVideosSince(String channelId, Date dateSince) throws IOException {
-        List<VideoData> videos = new LinkedList<VideoData>();
+        List<VideoData> videos = new LinkedList<>();
 
         YouTube.Search.List search = youtube.search().list("id");
 
@@ -129,8 +135,8 @@ public class Auth {
         return videos;
     }
 
-    public List<Channel> searchForChannels(String query) throws IOException {
-        List<Channel> results = new LinkedList<Channel>();
+    public List<ChannelData> searchForChannels(String query) throws IOException {
+        List<ChannelData> results = new LinkedList<>();
 
         YouTube.Search.List search = youtube.search().list("id,snippet");
 
@@ -145,7 +151,7 @@ public class Auth {
         List<SearchResult> searchResultList = searchResponse.getItems();
 
         for (SearchResult searchResult : searchResultList) {
-            results.add(new Channel(searchResult.getSnippet().getChannelId(), searchResult.getSnippet()
+            results.add(new ChannelData(searchResult.getSnippet().getChannelId(), searchResult.getSnippet()
                     .getChannelTitle()));
         }
 
@@ -153,7 +159,7 @@ public class Auth {
         return results;
     }
 
-    public Channel getChannel(String channelId) throws IOException {
+    public ChannelData getChannel(String channelId) throws IOException {
         YouTube.Search.List search = youtube.search().list("snippet");
 
         search.setKey(apiKey);
@@ -164,6 +170,6 @@ public class Auth {
         SearchListResponse searchResponse = search.execute();
         List<SearchResult> searchResultList = searchResponse.getItems();
 
-        return new Channel(channelId, searchResultList.get(0).getSnippet().getChannelTitle());
+        return new ChannelData(channelId, searchResultList.get(0).getSnippet().getChannelTitle());
     }
 }

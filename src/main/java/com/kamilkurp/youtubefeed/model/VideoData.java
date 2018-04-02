@@ -6,29 +6,16 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Class representing single video and its data.
- */
 public class VideoData implements Serializable{
-    /**
-     * Youtube video title.
-     */
+
     private String title;
-    /**
-     * Youtube video published date.
-     */
+
     private DateTime publishedDate;
-    /**
-     * Youtube video ID.
-     */
+
     private String id;
-    /**
-     * Youtube video thumbnail URL.
-     */
+
     private String thumbnailUrl;
-    /**
-     * Youtube video channel title.
-     */
+
     private String channelTitle;
 
 
@@ -49,7 +36,7 @@ public class VideoData implements Serializable{
         return format.format(date);
     }
 
-    DateTime getPublishedDate() {
+    public DateTime getPublishedDate() {
         return publishedDate;
     }
 
@@ -57,7 +44,7 @@ public class VideoData implements Serializable{
         this.publishedDate = date;
     }
 
-    String getId() {
+    public String getId() {
         return id;
     }
 
@@ -66,7 +53,7 @@ public class VideoData implements Serializable{
     }
 
     public String getUrl() {
-        return "https://www.youtube.com/watch?v=" + getId();
+        return "https://www.youtube.com/watch?v=" + this.id;
     }
 
     public String getThumbnailUrl() {
@@ -94,3 +81,4 @@ public class VideoData implements Serializable{
     }
 
 }
+
